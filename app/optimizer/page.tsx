@@ -186,7 +186,7 @@ export default function OptimizerPage() {
                   <span id="rating-next-label">Next: G+ at 300</span>
                   <span id="rating-next-needed">+0</span>
                 </div>
-                <div className="rating-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div className="rating-progress-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={0}>
                   <div id="rating-progress-fill" className="rating-progress-fill"></div>
                 </div>
               </div>
