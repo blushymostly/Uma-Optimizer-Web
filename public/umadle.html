@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UmaTools - Uma Musume Umadle</title>
+    <meta
+      name="description"
+      content="Daily Uma Musume guessing game where you narrow down the mystery Uma with stat hints."
+    />
+    <meta
+      property="og:title"
+      content="UmaTools - Uma Musume Umadle"
+    />
+    <meta
+      property="og:description"
+      content="Daily Uma Musume guessing game where you narrow down the mystery Uma with stat hints."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="UmaTools" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+      <script defer src="/_vercel/insights/script.js"></script>
+  </head>
+  <body>
+    <script>
+    (function () {
+    try {
+        var pref = localStorage.getItem("umasearch-darkmode");
+        var dark = pref ? (pref === "dark")
+                        : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.classList.toggle("dark-mode", dark);
+        document.body.classList.toggle("dark-mode", dark);
+        document.documentElement.style.colorScheme = dark ? "dark" : "light";
+    } catch (e) {}
+    })();
+    </script>
+    <div class="container">
+      <h1>Umadle</h1>
+
+      <button
+        id="modeToggleBtn"
+        aria-label="Toggle dark/light mode"
+        class="mode-toggle-btn"
+        title="Toggle dark/light mode"
+      >
+        <svg
+          id="iconSun"
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg
+          id="iconMoon"
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          style="display: none"
+        >
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+        </svg>
+      </button>
+
+      <section class="search-panel">
+        <form
+          class="controls search-form"
+          id="guess-form"
+          autocomplete="off"
+        >
+          <input
+            id="guess"
+            list="umaList"
+            type="text"
+            placeholder="Select an Uma"
+          />
+          <datalist id="umaList"></datalist>
+          <button class="primary" id="guess-btn" type="submit">Guess</button>
+        </form>
+        <div id="legend" class="status">
+          Legend: <b>✓</b> exact match, <span class="sym up">▲</span> your guess
+          is lower (go up), <span class="sym down">▼</span> your guess is higher
+          (go down)
+        </div>
+      </section>
+
+      <div id="rows" class="umadle-grid"></div>
+      <div id="footer" class="status"></div>
+    </div>
+
+    <!-- WIN MODAL -->
+    <div id="winModal" class="modal-backdrop" aria-hidden="true">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="winTitle"
+      >
+        <h3 id="winTitle">You got it! 🎉</h3>
+        <p id="winMsg" class="muted"></p>
+        <div class="btn-row">
+          <button id="winNewBtn" class="btn primary">New UMA</button>
+          <button id="winCloseBtn" class="btn">Keep Board</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.NAV_ROUTES = [
+        { label: "Events", path: "/", file: "/index.html" },
+        { label: "Support Hints", path: "/hints", file: "/hints.html" },
+        { label: "Umadle", path: "/umadle", file: "/umadle.html" },
+        { label: "Randomizer", path: "/random", file: "/random.html" },
+        { label: "Optimizer", path: "/optimizer", file: "/optimizer.html" },
+      ];
+    </script>
+    <script src="/nav.js" defer></script>
+    <script type="module" src="/umadle.js"></script>
+
+    <script>
+    (function () {
+    function applyTheme(dark, persist) {
+        document.documentElement.classList.toggle("dark-mode", dark);
+        document.body.classList.toggle("dark-mode", dark);
+        document.documentElement.style.colorScheme = dark ? "dark" : "light";
+        if (persist) {
+        try { localStorage.setItem("umasearch-darkmode", dark ? "dark" : "light"); } catch(e) {}
+        }
+        var sun = document.getElementById("iconSun");
+        var moon = document.getElementById("iconMoon");
+        if (sun && moon) { sun.style.display = dark ? "none" : "inline"; moon.style.display = dark ? "inline" : "none"; }
+    }
+
+    applyTheme(document.documentElement.classList.contains("dark-mode"), false);
+
+    var btn = document.getElementById("modeToggleBtn");
+    if (btn) btn.addEventListener("click", function () {
+        applyTheme(!document.documentElement.classList.contains("dark-mode"), true);
+    });
+
+    window.addEventListener("storage", function (e) {
+        if (e.key === "umasearch-darkmode") {
+        applyTheme(e.newValue === "dark", false);
+        }
+    });
+    })();
+    </script>
+  </body>
+</html>

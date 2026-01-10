@@ -1,4 +1,22 @@
 {
   "buildCommand": "npm run build",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "rewrites": [
+    {
+      "source": "/umadle",
+      "destination": "/umadle.html"
+    },
+    {
+      "source": "/hints",
+      "destination": "/hints.html"
+    },
+    {
+      "source": "/optimizer",
+      "destination": "/optimizer.html"
+    },
+    {
+      "source": "/random",
+      "destination": "/random.html"
+    }
+  ]
 }

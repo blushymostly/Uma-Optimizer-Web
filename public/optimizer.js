@@ -365,7 +365,7 @@
   }
 
   const RATING_SPRITE = {
-    url: 'assets/rank_badges.png',
+    url: '/assets/rank_badges.png',
     columns: 6,
     rows: 6,
     tileWidth: 125,
