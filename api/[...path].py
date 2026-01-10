@@ -148,6 +148,12 @@ async def get_event_by_name(
         "other_matches": other_matches,
     }
 
+@app.api_route("/{full_path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+async def catch_all(request, full_path: str):
+    # This catch-all route handles any path not matched by above routes
+    # It's needed for Vercel's catch-all function pattern
+    raise HTTPException(status_code=404, detail=f"Route not found: /{full_path}")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=3000)
