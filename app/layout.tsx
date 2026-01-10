@@ -3,6 +3,7 @@ import Script from 'next/script'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Navigation from './components/Navigation'
+import { FOOTER_LINKS } from './constants'
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' })
 
@@ -44,7 +45,22 @@ export default function RootLayout({
       </head>
       <body className={inter.className} suppressHydrationWarning>
         <Navigation />
-        {children}
+        <main style={{ flex: '1 0 auto', width: '100%' }}>
+          {children}
+        </main>
+        <footer className="site-footer">
+          <span>Made with ❤️</span>
+          {FOOTER_LINKS.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {link.label}
+            </a>
+          ))}
+        </footer>
         <Script defer src="/_vercel/insights/script.js" />
       </body>
     </html>
