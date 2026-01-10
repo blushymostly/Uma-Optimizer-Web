@@ -1,58 +1,68 @@
-# Uma Event Helper (Web)
+# Uma Tools (Web)
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/blushymostly/Uma-Optimizer-Web)
 
 ## Overview
 
-Uma Event Helper is a browser-based tool to assist with Uma Musume event choices. It:
+Uma Tools is a collection of browser-based tools for Uma Musume players. It includes:
 
-- Captures the game window using browser screen capture.
-- Uses Tesseract.js for OCR to read event titles.
-- Looks up events via a FastAPI backend.
-- Scores and recommends options based on stats, energy, hints, and statuses.
+- **Support Hints Finder** - Find Uma Musume support card hints by skill keywords
+- **Umadle** - Daily Uma Musume guessing game
+- **Randomizer** - Randomize support decks and pick random Uma for training challenges
+- **Skill Optimizer** - Skill optimizer and rating calculator to plan builds
 
 ---
 
-## Usage
+## Local Development
 
-1. **Open the app** in your browser.
-2. Click **Capture Screen for OCR** and select your game window.
-3. Adjust **Scan Time** for OCR frequency (CPU vs. responsiveness).
-4. Enter or OCR an event name to search.
-5. The app will display event options, score them, and recommend the best choice.
-   - If multiple options tie, no recommendation badge is shown.
-   - Labeled options are preferred over unlabeled duplicates.
+This project uses [Next.js](https://nextjs.org/) for deployment on Vercel.
+
+### Prerequisites
+
+- Node.js 18+ installed
+- npm or yarn package manager
+
+### Installation
+
+1. **Clone the repo**
+
+   ```bash
+   git clone https://github.com/blushymostly/Uma-Optimizer-Web.git
+   cd Uma-Optimizer-Web
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+3. **Run development server**
+
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Build for Production
+
+```bash
+npm run build
+npm start
+```
+
+---
+
+## Deployment
+
+This project is configured for deployment on [Vercel](https://vercel.com). Simply connect your GitHub repository to Vercel, and it will automatically deploy on every push.
 
 ---
 
 ## Acknowledgements
 
-- Project initially inspired by [Kisegami's Event Helper](https://github.com/Kisegami/Uma-Event-Helper)
 - Resources and Data from [GameTora](https://gametora.com)
-
-## Local Development
-
-- **Install dependencies**  
-  Make sure you have Node.js and the [Vercel CLI](https://vercel.com/download) installed:
-
-  ```bash
-   npm i -g vercel
-  ```
-
-- **Clone the repo**
-  
-  ```bash
-  git clone https://github.com/daftuyda/Uma-Event-Helper-Web.git
-  cd Uma-Event-Helper-Web
-  ```
-
-- **Run with Vercel**
-  
-  ```bash
-  vercel dev --debug
-  ```
-
----
 
 ## License
 

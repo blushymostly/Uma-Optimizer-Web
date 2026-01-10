@@ -1,0 +1,27 @@
+# Ignore old HTML files (we use Next.js now)
+*.html
+!public/**/*.html
+
+# Ignore old JS files in root (they're in public now)
+hints.js
+optimizer.js
+random.js
+umadle.js
+search.js
+ocr.js
+skill-ocr.js
+recommend.js
+nav.js
+
+# Ignore Python files (no longer needed)
+*.py
+requirements.txt
+api/
+
+# Ignore duplicate assets (we use public/assets)
+# Keep assets/ folder for reference but don't deploy it
+
+# Development files
+.env*.local
+.DS_Store
+*.log
