@@ -337,10 +337,13 @@
         <div class="toolbar" role="group" aria-label="Skill rows">
           <span class="muted">Tip: just enter the skill name and cost - its type auto-detects</span>
           <div class="spacer"></div>
+          <button id="import-screenshot" class="btn btn-secondary" type="button">Import from Screenshot</button>
+          <input type="file" id="screenshot-file-input" accept="image/*" style="display: none;" />
           <button id="copy-build" class="btn btn-secondary" type="button">Copy Build</button>
           <button id="load-build" class="btn btn-secondary" type="button">Load Build</button>
           <button id="clear-all" class="btn" type="button">Clear All</button>
         </div>
+        <div id="ocr-import-status" class="status muted" style="margin-top: 8px;" aria-live="polite"></div>
         <div id="rows" class="rows"></div>
       </section>
     </main>
@@ -366,6 +369,8 @@
       ];
     </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <script src="skill-ocr.js" defer></script>
     <script src="nav.js" defer></script>
     <script>
       (function () {
