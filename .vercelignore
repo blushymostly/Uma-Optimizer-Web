@@ -1,8 +1,9 @@
-# Ignore old HTML files (we use Next.js now)
+# Ignore old HTML files in root (we use Next.js now)
 *.html
 !public/**/*.html
 
-# Ignore old JS files in root (they're in public now)
+# Ignore old JS files in root only (files in public/ are allowed)
+# Note: These patterns match files in root, NOT in public/ subdirectory
 hints.js
 optimizer.js
 random.js
@@ -12,6 +13,15 @@ ocr.js
 skill-ocr.js
 recommend.js
 nav.js
+
+# Explicitly ensure JS files in public/ are NOT ignored (they should be deployed)
+!public/hints.js
+!public/optimizer.js
+!public/random.js
+!public/umadle.js
+!public/skill-ocr.js
+!public/recommend.js
+!public/nav.js
 
 # Ignore Python files (no longer needed)
 *.py
