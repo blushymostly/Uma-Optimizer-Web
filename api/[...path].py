@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 from typing import Dict, List
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from rapidfuzz import process, fuzz
 
@@ -9,6 +10,15 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 ASSETS = BASE_DIR / "assets"
 
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class StripPathPrefix(BaseHTTPMiddleware):
     def __init__(self, app, prefixes=()):
