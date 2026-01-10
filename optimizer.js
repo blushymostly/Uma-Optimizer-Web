@@ -104,6 +104,92 @@
     return normalize(str).replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
   }
 
+  // Levenshtein distance for fuzzy matching
+  function levenshteinDistance(str1, str2) {
+    const s1 = normalize(str1);
+    const s2 = normalize(str2);
+    const len1 = s1.length;
+    const len2 = s2.length;
+    const matrix = [];
+
+    if (len1 === 0) return len2;
+    if (len2 === 0) return len1;
+
+    for (let i = 0; i <= len2; i++) {
+      matrix[i] = [i];
+    }
+
+    for (let j = 0; j <= len1; j++) {
+      matrix[0][j] = j;
+    }
+
+    for (let i = 1; i <= len2; i++) {
+      for (let j = 1; j <= len1; j++) {
+        if (s2.charAt(i - 1) === s1.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j] + 1
+          );
+        }
+      }
+    }
+
+    return matrix[len2][len1];
+  }
+
+  // Fuzzy match skill name to database
+  function fuzzyMatchSkillName(ocrName, threshold = 0.7) {
+    if (!ocrName || !allSkillNames.length) return null;
+
+    const normalizedOcr = normalize(ocrName);
+    let bestMatch = null;
+    let bestScore = 0;
+
+    // First try exact normalized match
+    const exactMatch = findSkillByName(ocrName);
+    if (exactMatch) {
+      return { skill: exactMatch, score: 1.0, confidence: 'exact' };
+    }
+
+    // Try substring match
+    for (const dbName of allSkillNames) {
+      const normalizedDb = normalize(dbName);
+      
+      // Check if OCR name is substring of DB name or vice versa
+      if (normalizedDb.includes(normalizedOcr) || normalizedOcr.includes(normalizedDb)) {
+        const similarity = Math.min(normalizedOcr.length, normalizedDb.length) / Math.max(normalizedOcr.length, normalizedDb.length);
+        if (similarity > bestScore && similarity >= threshold) {
+          bestScore = similarity;
+          bestMatch = findSkillByName(dbName);
+          if (bestMatch && similarity > 0.9) {
+            return { skill: bestMatch, score: similarity, confidence: 'substring' };
+          }
+        }
+      }
+    }
+
+    // Fuzzy match using Levenshtein distance
+    for (const dbName of allSkillNames) {
+      const distance = levenshteinDistance(ocrName, dbName);
+      const maxLen = Math.max(normalizedOcr.length, normalize(dbName).length);
+      const similarity = 1 - (distance / maxLen);
+
+      if (similarity > bestScore && similarity >= threshold) {
+        bestScore = similarity;
+        bestMatch = findSkillByName(dbName);
+      }
+    }
+
+    if (bestMatch && bestScore >= threshold) {
+      return { skill: bestMatch, score: bestScore, confidence: 'fuzzy' };
+    }
+
+    return null;
+  }
+
   async function tryWriteClipboard(text) {
     if (navigator?.clipboard?.writeText) {
       await navigator.clipboard.writeText(text);
@@ -649,6 +735,392 @@
     ensureOneEmptyRow();
     saveState();
     autoOptimizeDebounced();
+  }
+
+  // Import skills from screenshot using OCR
+  async function importSkillsFromScreenshot(imageElement) {
+    if (!window.SkillOCR) {
+      throw new Error('Skill OCR module not loaded. Please ensure skill-ocr.js is loaded.');
+    }
+
+    const statusEl = document.getElementById('ocr-import-status');
+    if (statusEl) statusEl.textContent = 'Processing image with OCR...';
+
+    try {
+      // Extract skills from image
+      const extractedSkills = await window.SkillOCR.extractSkillsFromImage(imageElement);
+      
+      if (!extractedSkills || extractedSkills.length === 0) {
+        throw new Error('No skills detected in the image. Please ensure the screenshot contains visible skill cards.');
+      }
+
+      if (statusEl) statusEl.textContent = `Found ${extractedSkills.length} skill(s). Matching to database...`;
+
+      // Match each extracted skill to database
+      const matchedSkills = [];
+      const unmatchedSkills = [];
+
+      for (const extracted of extractedSkills) {
+        const match = fuzzyMatchSkillName(extracted.name, 0.6); // Lower threshold for OCR errors
+        
+        if (match && match.skill) {
+          matchedSkills.push({
+            extracted: extracted,
+            matched: match.skill,
+            matchScore: match.score,
+            confidence: match.confidence
+          });
+        } else {
+          unmatchedSkills.push(extracted);
+        }
+      }
+
+      if (statusEl) {
+        statusEl.textContent = `Matched ${matchedSkills.length}/${extractedSkills.length} skill(s).`;
+      }
+
+      // Always show preview modal to allow selection and hint level adjustment
+      const result = await showImportPreview(matchedSkills, unmatchedSkills);
+      
+      if (!result || result === null) {
+        if (statusEl) statusEl.textContent = 'Import cancelled.';
+        return { matched: 0, unmatched: 0 };
+      }
+
+      // Add selected skills to optimizer with adjusted hint levels
+      return addSkillsToOptimizer(result.matched || [], result.unmatched || []);
+
+    } catch (error) {
+      console.error('OCR import error:', error);
+      if (statusEl) statusEl.textContent = `Error: ${error.message}`;
+      throw error;
+    }
+  }
+
+  // Show preview modal with detected skills
+  async function showImportPreview(matchedSkills, unmatchedSkills) {
+    return new Promise((resolve) => {
+      const isDark = document.documentElement.classList.contains('dark-mode');
+      const bgColor = isDark ? '#1a1a1a' : 'white';
+      const textColor = isDark ? '#e0e0e0' : '#000';
+      const itemBg = isDark ? '#2a2a2a' : '#f5f5f5';
+      const inputBg = isDark ? '#333' : '#fff';
+      const borderColor = isDark ? '#555' : '#ddd';
+      
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+      
+      const dialog = document.createElement('div');
+      dialog.className = 'modal-dialog';
+      dialog.style.cssText = `background: ${bgColor}; color: ${textColor}; padding: 24px; border-radius: 8px; max-width: 700px; max-height: 85vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3);`;
+      
+      // Generate unique ID for datalist
+      const datalistId = `preview-skills-datalist-${Math.random().toString(36).slice(2)}`;
+      
+      let html = '<h3 style="margin-top: 0;">Import Preview - Select Skills to Add</h3>';
+      html += '<div style="margin-bottom: 16px;">';
+      html += '<p style="font-size: 0.9em; opacity: 0.8; margin-bottom: 16px;">Check skills to import and adjust hint levels as needed.</p>';
+      html += `<datalist id="${datalistId}"></datalist>`;
+      
+      if (matchedSkills.length > 0) {
+        html += `<h4>Matched Skills (${matchedSkills.length}):</h4>`;
+        html += '<ul style="list-style: none; padding: 0;">';
+        matchedSkills.forEach((m, idx) => {
+          const confidence = Math.round(m.matchScore * 100);
+          const borderColorSkill = m.matchScore >= 0.9 ? '#4CAF50' : m.matchScore >= 0.75 ? '#FF9800' : '#F44336';
+          html += `<li style="padding: 12px; margin-bottom: 8px; border-left: 3px solid ${borderColorSkill}; background: ${itemBg}; color: ${textColor}; border-radius: 4px;">`;
+          html += `<label style="display: flex; align-items: flex-start; cursor: pointer; gap: 12px;">`;
+          html += `<input type="checkbox" class="skill-checkbox" data-type="matched" data-index="${idx}" checked style="margin-top: 4px; cursor: pointer; flex-shrink: 0;" />`;
+          html += `<div style="flex: 1;">`;
+          html += `<input type="text" class="skill-name-edit" data-type="matched" data-index="${idx}" list="${datalistId}" value="${m.matched.name.replace(/"/g, '&quot;')}" style="background: transparent; border: none; border-bottom: 1px dashed ${borderColor}; color: ${textColor}; font-weight: bold; font-size: 1em; padding: 2px 4px; margin-right: 8px; min-width: 200px; cursor: text;" />`;
+          html += `<span style="opacity: 0.7; font-size: 0.9em;">(${confidence}% match)</span><br>`;
+          html += `<small style="opacity: 0.8; display: block; margin-top: 4px;">OCR: "${m.extracted.name}" | Cost: ${m.extracted.cost || '?'}</small>`;
+          html += `<div style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">`;
+          html += `<label style="font-size: 0.9em; display: flex; align-items: center; gap: 6px;">Hint Level:`;
+          html += `<select class="hint-level-select" data-type="matched" data-index="${idx}" style="padding: 4px 8px; background: ${inputBg}; color: ${textColor}; border: 1px solid ${borderColor}; border-radius: 4px; font-size: 0.9em;">`;
+          for (let lvl = 0; lvl <= 5; lvl++) {
+            const discount = getTotalHintDiscountPct(lvl);
+            const selected = lvl === (m.extracted.hintLevel || 0) ? 'selected' : '';
+            html += `<option value="${lvl}" ${selected}>Lv${lvl} (${discount}% off)</option>`;
+          }
+          html += `</select></label>`;
+          html += `</div>`;
+          html += `</div>`;
+          html += `</label>`;
+          html += '</li>';
+        });
+        html += '</ul>';
+      }
+      
+      if (unmatchedSkills.length > 0) {
+        html += `<h4>Unmatched Skills (${unmatchedSkills.length}):</h4>`;
+        html += '<ul style="list-style: none; padding: 0;">';
+        unmatchedSkills.forEach((u, idx) => {
+          html += `<li style="padding: 12px; margin-bottom: 8px; border-left: 3px solid #F44336; background: ${itemBg}; color: ${textColor}; border-radius: 4px;">`;
+          html += `<label style="display: flex; align-items: flex-start; cursor: pointer; gap: 12px;">`;
+          html += `<input type="checkbox" class="skill-checkbox" data-type="unmatched" data-index="${idx}" style="margin-top: 4px; cursor: pointer; flex-shrink: 0;" />`;
+          html += `<div style="flex: 1;">`;
+          html += `<input type="text" class="skill-name-edit" data-type="unmatched" data-index="${idx}" list="${datalistId}" value="${u.name.replace(/"/g, '&quot;')}" style="background: transparent; border: none; border-bottom: 1px dashed ${borderColor}; color: ${textColor}; font-weight: bold; font-size: 1em; padding: 2px 4px; margin-bottom: 4px; min-width: 200px; cursor: text; display: block;" /><br>`;
+          html += `<small style="opacity: 0.8; display: block; margin-top: 4px;">Cost: ${u.cost || '?'}</small>`;
+          html += `<div style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">`;
+          html += `<label style="font-size: 0.9em; display: flex; align-items: center; gap: 6px;">Hint Level:`;
+          html += `<select class="hint-level-select" data-type="unmatched" data-index="${idx}" style="padding: 4px 8px; background: ${inputBg}; color: ${textColor}; border: 1px solid ${borderColor}; border-radius: 4px; font-size: 0.9em;">`;
+          for (let lvl = 0; lvl <= 5; lvl++) {
+            const discount = getTotalHintDiscountPct(lvl);
+            const selected = lvl === (u.hintLevel || 0) ? 'selected' : '';
+            html += `<option value="${lvl}" ${selected}>Lv${lvl} (${discount}% off)</option>`;
+          }
+          html += `</select></label>`;
+          html += `</div>`;
+          html += `</div>`;
+          html += `</label>`;
+          html += '</li>';
+        });
+        html += '</ul>';
+        html += '<p style="color: #F44336; font-size: 0.9em; margin-top: 8px;">Unmatched skills will be added as-is. You may need to correct the skill names manually after import.</p>';
+      }
+      
+      html += '</div>';
+      
+      const buttons = document.createElement('div');
+      buttons.style.cssText = 'display: flex; gap: 8px; justify-content: space-between; margin-top: 16px; align-items: center;';
+      
+      const selectAllBtn = document.createElement('button');
+      selectAllBtn.className = 'btn btn-secondary';
+      selectAllBtn.textContent = 'Select All';
+      selectAllBtn.onclick = () => {
+        dialog.querySelectorAll('.skill-checkbox').forEach(cb => cb.checked = true);
+      };
+      
+      const selectNoneBtn = document.createElement('button');
+      selectNoneBtn.className = 'btn btn-secondary';
+      selectNoneBtn.textContent = 'Select None';
+      selectNoneBtn.onclick = () => {
+        dialog.querySelectorAll('.skill-checkbox').forEach(cb => cb.checked = false);
+      };
+      
+      const buttonGroup = document.createElement('div');
+      buttonGroup.style.cssText = 'display: flex; gap: 8px;';
+      
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'btn btn-secondary';
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.onclick = () => {
+        modal.remove();
+        resolve(null);
+      };
+      
+      const confirmBtn = document.createElement('button');
+      confirmBtn.className = 'btn';
+      confirmBtn.textContent = 'Import Selected';
+      confirmBtn.onclick = () => {
+        // Collect selected skills with updated hint levels and edited names
+        const selectedMatched = [];
+        const selectedUnmatched = [];
+        
+        // Get selected matched skills
+        dialog.querySelectorAll('.skill-checkbox[data-type="matched"]').forEach((cb) => {
+          if (cb.checked) {
+            const index = parseInt(cb.dataset.index, 10);
+            const hintSelect = dialog.querySelector(`.hint-level-select[data-type="matched"][data-index="${index}"]`);
+            const skillNameInput = dialog.querySelector(`.skill-name-edit[data-type="matched"][data-index="${index}"]`);
+            const hintLevel = hintSelect ? parseInt(hintSelect.value, 10) : matchedSkills[index].extracted.hintLevel || 0;
+            const editedName = skillNameInput ? (skillNameInput.value || '').trim() : matchedSkills[index].matched.name;
+            
+            // If skill name was edited, try to find the new skill in database
+            let matchedSkill = matchedSkills[index].matched;
+            if (editedName !== matchedSkills[index].matched.name) {
+              const foundSkill = findSkillByName(editedName);
+              if (foundSkill) {
+                matchedSkill = foundSkill;
+              } else {
+                // Skill name changed but not found - keep the edited name but mark as unmatched
+                matchedSkill = {
+                  name: editedName,
+                  baseCost: matchedSkills[index].matched.baseCost || matchedSkills[index].extracted.cost || null
+                };
+              }
+            }
+            
+            selectedMatched.push({
+              ...matchedSkills[index],
+              matched: matchedSkill,
+              extracted: {
+                ...matchedSkills[index].extracted,
+                name: editedName,
+                hintLevel: hintLevel
+              }
+            });
+          }
+        });
+        
+        // Get selected unmatched skills
+        dialog.querySelectorAll('.skill-checkbox[data-type="unmatched"]').forEach((cb) => {
+          if (cb.checked) {
+            const index = parseInt(cb.dataset.index, 10);
+            const hintSelect = dialog.querySelector(`.hint-level-select[data-type="unmatched"][data-index="${index}"]`);
+            const skillNameInput = dialog.querySelector(`.skill-name-edit[data-type="unmatched"][data-index="${index}"]`);
+            const hintLevel = hintSelect ? parseInt(hintSelect.value, 10) : unmatchedSkills[index].hintLevel || 0;
+            const editedName = skillNameInput ? (skillNameInput.value || '').trim() : unmatchedSkills[index].name;
+            
+            // If edited name matches a skill in database, convert to matched skill
+            const foundSkill = findSkillByName(editedName);
+            if (foundSkill) {
+              // Convert to matched skill
+              selectedMatched.push({
+                matched: foundSkill,
+                matchScore: 1.0,
+                extracted: {
+                  name: editedName,
+                  cost: unmatchedSkills[index].cost || foundSkill.baseCost || null,
+                  hintLevel: hintLevel
+                }
+              });
+            } else {
+              // Keep as unmatched with edited name
+              selectedUnmatched.push({
+                ...unmatchedSkills[index],
+                name: editedName,
+                hintLevel: hintLevel
+              });
+            }
+          }
+        });
+        
+        modal.remove();
+        resolve({ matched: selectedMatched, unmatched: selectedUnmatched });
+      };
+      
+      buttonGroup.appendChild(cancelBtn);
+      buttonGroup.appendChild(confirmBtn);
+      
+      buttons.appendChild(selectAllBtn);
+      buttons.appendChild(selectNoneBtn);
+      buttons.appendChild(buttonGroup);
+      
+      dialog.innerHTML = html;
+      dialog.appendChild(buttons);
+      modal.appendChild(dialog);
+      document.body.appendChild(modal);
+      
+      // Populate datalist with all skill names
+      const datalistEl = dialog.querySelector(`#${datalistId}`);
+      if (datalistEl && typeof populateSkillDatalist === 'function') {
+        populateSkillDatalist(datalistEl);
+      }
+      
+      // Close on outside click
+      modal.onclick = (e) => {
+        if (e.target === modal) {
+          modal.remove();
+          resolve(null);
+        }
+      };
+    });
+  }
+
+  // Add skills to optimizer rows
+  function addSkillsToOptimizer(matchedSkills, unmatchedSkills) {
+    clearAutoHighlights();
+    
+    const addedCount = { matched: 0, unmatched: 0 };
+
+    // Add matched skills
+    for (const m of matchedSkills) {
+      const row = makeRow();
+      rowsEl.appendChild(row);
+      
+      // Set flag to skip ensureOneEmptyRow during import
+      row.dataset.skipEnsureEmpty = 'true';
+      
+      const nameInput = row.querySelector('.skill-name');
+      const costInput = row.querySelector('.cost');
+      const hintSelect = row.querySelector('.hint-level');
+      const baseCostDisplay = row.querySelector('.base-cost');
+      
+      if (nameInput) nameInput.value = m.matched.name;
+      if (hintSelect) hintSelect.value = String(m.extracted.hintLevel || 0);
+      
+      // Handle cost - recalculate based on adjusted hint level
+      const hintLevel = m.extracted.hintLevel || 0;
+      const baseCost = m.matched.baseCost;
+      
+      if (!isNaN(baseCost) && baseCost) {
+        row.dataset.baseCost = String(baseCost);
+        // Recalculate cost with adjusted hint level
+        const recalculatedCost = calculateDiscountedCost(baseCost, hintLevel);
+        costInput.value = recalculatedCost;
+      } else {
+        // Use extracted cost if available, otherwise leave empty
+        const extractedCost = m.extracted.cost;
+        if (extractedCost && !isNaN(extractedCost)) {
+          costInput.value = extractedCost;
+        }
+      }
+      
+      if (typeof row.syncSkillCategory === 'function') {
+        row.syncSkillCategory({ triggerOptimize: false, allowLinking: true, updateCost: true });
+      }
+      
+      addedCount.matched++;
+    }
+
+    // Add unmatched skills (user will need to correct names)
+    for (const u of unmatchedSkills) {
+      const row = makeRow();
+      rowsEl.appendChild(row);
+      
+      // Set flag to skip ensureOneEmptyRow during import
+      row.dataset.skipEnsureEmpty = 'true';
+      
+      const nameInput = row.querySelector('.skill-name');
+      const costInput = row.querySelector('.cost');
+      const hintSelect = row.querySelector('.hint-level');
+      
+      if (nameInput) nameInput.value = u.name;
+      if (costInput && u.cost && !isNaN(u.cost)) costInput.value = u.cost;
+      if (hintSelect) hintSelect.value = String(u.hintLevel || 0);
+      
+      // Try to find skill in database and sync category/child skills
+      if (typeof row.syncSkillCategory === 'function') {
+        row.syncSkillCategory({ triggerOptimize: false, allowLinking: true, updateCost: true });
+      }
+      
+      addedCount.unmatched++;
+    }
+
+    // Remove all empty top-level rows except the last one
+    const allTopLevelRows = Array.from(rowsEl.querySelectorAll('.optimizer-row'))
+      .filter(isTopLevelRow);
+    
+    // Find and remove empty rows (keeping only the last empty one if it exists)
+    for (let i = allTopLevelRows.length - 2; i >= 0; i--) {
+      const row = allTopLevelRows[i];
+      if (!isRowFilled(row)) {
+        row.remove();
+      }
+    }
+    
+    // Remove skipEnsureEmpty flags from all rows
+    rowsEl.querySelectorAll('.optimizer-row').forEach(row => {
+      if (row.dataset.skipEnsureEmpty === 'true') {
+        delete row.dataset.skipEnsureEmpty;
+      }
+    });
+    
+    // Ensure one empty row at the end
+    ensureOneEmptyRow();
+    saveState();
+    autoOptimizeDebounced();
+
+    const statusEl = document.getElementById('ocr-import-status');
+    if (statusEl) {
+      statusEl.textContent = `Imported ${addedCount.matched} matched skill(s)${addedCount.unmatched > 0 ? ` and ${addedCount.unmatched} unmatched skill(s)` : ''}.`;
+      setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 5000);
+    }
+
+    return addedCount;
   }
 
   function autoBuildIdealSkills() {
@@ -1233,7 +1705,7 @@
       dupWarning.classList.remove('visible');
     }
 
-  function ensureLinkedLowerForGold(category, { allowCreate = true } = {}) {
+  function ensureLinkedLowerForGold(category, { allowCreate = true, skipEnsureEmpty = false } = {}) {
     if (row.dataset.parentGoldId) return;
     const isGold = isGoldCategory(category);
     const currentLinkedId = row.dataset.lowerRowId;
@@ -1243,8 +1715,10 @@
           if (linked) linked.remove();
           delete row.dataset.lowerRowId;
           saveState();
-          ensureOneEmptyRow();
-          autoOptimizeDebounced();
+          if (!skipEnsureEmpty) {
+            ensureOneEmptyRow();
+            autoOptimizeDebounced();
+          }
         }
         return;
       }
@@ -1252,6 +1726,10 @@
     const linked = makeRow();
     linked.classList.add('linked-lower');
     linked.dataset.parentGoldId = id;
+    // Inherit skipEnsureEmpty flag from parent row
+    if (row.dataset.skipEnsureEmpty === 'true') {
+      linked.dataset.skipEnsureEmpty = 'true';
+    }
     const lid = linked.dataset.rowId;
     const linkedInput = linked.querySelector('.skill-name');
     if (linkedInput) linkedInput.placeholder = 'Lower skill...';
@@ -1269,11 +1747,13 @@
     }
     autofillLinkedLower(linked);
     saveState();
-    ensureOneEmptyRow();
-    autoOptimizeDebounced();
+    if (!skipEnsureEmpty) {
+      ensureOneEmptyRow();
+      autoOptimizeDebounced();
+    }
   }
 
-    function ensureLinkedLowerForParent(skill, { allowCreate = true } = {}) {
+    function ensureLinkedLowerForParent(skill, { allowCreate = true, skipEnsureEmpty = false } = {}) {
       if (!skill || !Array.isArray(skill.parentIds) || !skill.parentIds.length) return;
       if (row.dataset.lowerRowId) {
         const linked = rowsEl.querySelector(`.optimizer-row[data-row-id="${row.dataset.lowerRowId}"]`);
@@ -1284,6 +1764,10 @@
       const linked = makeRow();
       linked.classList.add('linked-lower');
       linked.dataset.parentSkillLink = id;
+      // Inherit skipEnsureEmpty flag from parent row
+      if (row.dataset.skipEnsureEmpty === 'true') {
+        linked.dataset.skipEnsureEmpty = 'true';
+      }
       const lid = linked.dataset.rowId;
       const linkedInput = linked.querySelector('.skill-name');
       if (linkedInput) linkedInput.placeholder = 'Lower skill...';
@@ -1298,8 +1782,10 @@
       row.dataset.lowerRowId = lid;
       autofillLinkedLower(linked);
       saveState();
-      ensureOneEmptyRow();
-      autoOptimizeDebounced();
+      if (!skipEnsureEmpty) {
+        ensureOneEmptyRow();
+        autoOptimizeDebounced();
+      }
     }
 
     function syncSkillCategory({ triggerOptimize = false, allowLinking = true, updateCost = false } = {}) {
@@ -1338,10 +1824,11 @@
       const category = skill ? skill.category : '';
       setCategoryDisplay(category);
       updateBaseCostDisplay(skill);
-      ensureLinkedLowerForGold(category, { allowCreate: allowLinking });
-      ensureLinkedLowerForParent(skill, { allowCreate: allowLinking });
+      const skipEnsureEmpty = row.dataset.skipEnsureEmpty === 'true';
+      ensureLinkedLowerForGold(category, { allowCreate: allowLinking, skipEnsureEmpty });
+      ensureLinkedLowerForParent(skill, { allowCreate: allowLinking, skipEnsureEmpty });
       if (updateCost) applyHintedCost(skill);
-      if (triggerOptimize) {
+      if (triggerOptimize && !skipEnsureEmpty) {
         saveState();
         ensureOneEmptyRow();
         autoOptimizeDebounced();
@@ -1941,6 +2428,74 @@
     renderResults(mergedResult, budget); saveState();
   });
   if (clearAllBtn) clearAllBtn.addEventListener('click', () => { clearAllRows(); });
+
+  // Screenshot import handlers
+  const importScreenshotBtn = document.getElementById('import-screenshot');
+  const screenshotFileInput = document.getElementById('screenshot-file-input');
+
+  async function handleImageImport(imageFile) {
+    if (!imageFile || !imageFile.type.startsWith('image/')) {
+      const statusEl = document.getElementById('ocr-import-status');
+      if (statusEl) statusEl.textContent = 'Error: Please select a valid image file.';
+      return;
+    }
+
+    try {
+      const img = new Image();
+      const url = URL.createObjectURL(imageFile);
+      
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = url;
+      });
+
+      await importSkillsFromScreenshot(img);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Import error:', error);
+      const statusEl = document.getElementById('ocr-import-status');
+      if (statusEl) statusEl.textContent = `Error: ${error.message}`;
+    }
+  }
+
+  if (importScreenshotBtn && screenshotFileInput) {
+    importScreenshotBtn.addEventListener('click', () => {
+      screenshotFileInput.click();
+    });
+
+    screenshotFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        await handleImageImport(file);
+        // Reset input so same file can be selected again
+        e.target.value = '';
+      }
+    });
+  }
+
+  // Clipboard paste support
+  document.addEventListener('paste', async (e) => {
+    // Only handle if no input is focused
+    if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
+      return;
+    }
+
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) {
+          await handleImageImport(file);
+        }
+        break;
+      }
+    }
+  });
   if (copyBuildBtn) {
     copyBuildBtn.addEventListener('click', async () => {
       const data = serializeRows();
