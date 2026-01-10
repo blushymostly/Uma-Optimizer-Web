@@ -3,6 +3,7 @@ import Script from 'next/script'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Navigation from './components/Navigation'
+import { ThemeProvider } from './components/ThemeProvider'
 import { FOOTER_LINKS } from './constants'
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' })
@@ -29,12 +30,20 @@ export default function RootLayout({
             __html: `
               (function () {
                 try {
-                  var pref = localStorage.getItem("umasearch-darkmode");
-                  var dark = pref
-                    ? pref === "dark"
-                    : window.matchMedia &&
-                      window.matchMedia("(prefers-color-scheme: dark)").matches;
-                  document.documentElement.classList.toggle("dark-mode", dark);
+                  var pref = localStorage.getItem("umasearch-theme") || localStorage.getItem("umasearch-darkmode");
+                  var dark = false;
+                  if (pref === "dark") {
+                    dark = true;
+                  } else if (pref === "light") {
+                    dark = false;
+                  } else {
+                    dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+                  }
+                  if (dark) {
+                    document.documentElement.classList.add("dark", "dark-mode");
+                  } else {
+                    document.documentElement.classList.remove("dark", "dark-mode");
+                  }
                   document.body.classList.toggle("dark-mode", dark);
                   document.documentElement.style.colorScheme = dark ? "dark" : "light";
                 } catch (e) {}
@@ -44,24 +53,27 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className} suppressHydrationWarning>
-        <Navigation />
-        <main style={{ flex: '1 0 auto', width: '100%' }}>
-          {children}
-        </main>
-        <footer className="site-footer">
-          <span>Made with ❤️</span>
-          {FOOTER_LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {link.label}
-            </a>
-          ))}
-        </footer>
-        <Script defer src="/_vercel/insights/script.js" />
+        <ThemeProvider>
+          <Navigation />
+          <main style={{ flex: '1 0 auto', width: '100%' }}>
+            {children}
+          </main>
+          <footer className="site-footer glass">
+            <span>Made with ❤️</span>
+            {FOOTER_LINKS.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:opacity-80 transition-opacity"
+              >
+                {link.label}
+              </a>
+            ))}
+          </footer>
+          <Script defer src="/_vercel/insights/script.js" />
+        </ThemeProvider>
       </body>
     </html>
   )

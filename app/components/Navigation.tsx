@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
+import { Menu, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import DarkModeToggle from './DarkModeToggle'
+import { cn } from '@/lib/utils'
 
 const ROUTES = [
   { label: 'Support Hints', path: '/hints' },
@@ -27,38 +30,41 @@ export default function Navigation() {
   }, [isMenuOpen])
 
   return (
-    <nav className={`site-nav ${isMenuOpen ? 'open' : ''}`}>
+    <nav className={cn('site-nav', isMenuOpen && 'open')}>
       <div className="nav-inner">
         <div className="nav-left">
-          <Link className="brand" href="/hints" aria-label="Uma Tools Home">
+          <Link 
+            className="brand text-lg font-bold transition-colors hover:text-[#3A7BC8]" 
+            href="/hints" 
+            aria-label="Uma Tools Home"
+          >
             UmaTools
           </Link>
-          <button
-            className="menu-btn"
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden menu-btn"
             aria-label="Menu"
             aria-expanded={isMenuOpen}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+            {isMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
+          </Button>
           <div className="nav-links" role="navigation" aria-label="Primary">
             {ROUTES.map((route) => (
               <Link
                 key={route.path}
                 href={route.path}
-                className={`nav-link ${pathname === route.path ? 'active' : ''}`}
+                className={cn(
+                  'nav-link px-3 py-1.5 rounded-md text-sm font-medium transition-all',
+                  pathname === route.path 
+                    ? 'active bg-[rgba(74,144,226,0.15)] border border-[rgba(74,144,226,0.4)] text-[#4A90E2] font-semibold' 
+                    : 'text-[#475569] hover:bg-[rgba(74,144,226,0.1)] hover:border-[rgba(74,144,226,0.3)] hover:text-[#4A90E2]'
+                )}
                 onClick={() => setIsMenuOpen(false)}
               >
                 {route.label}

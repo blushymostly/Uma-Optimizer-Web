@@ -1,290 +1,443 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardAction } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
 
 export const metadata: Metadata = {
   title: 'UmaTools - Uma Musume Skill Optimizer & Rating Calculator',
   description: 'Uma Musume skill optimizer and rating calculator to plan builds, manage skill points, and project final ratings.',
 }
 
+const GRADE_OPTIONS = ['S', 'A', 'B', 'C', 'D', 'E', 'F', 'G']
+
 export default function OptimizerPage() {
   return (
     <>
-      <main className="container">
-        <h1>Skill Optimizer</h1>
+      <main className="container space-y-8 mx-auto">
+        <h1 className="text-3xl font-bold text-center mb-8">Skill Optimizer</h1>
 
         {/* Budget + library status */}
-        <section className="card card-elevated">
-          <div className="toolbar" style={{ alignItems: 'flex-end' }}>
-            <label className="labelTitle" style={{ minWidth: '220px' }}>
-              Skill Points Budget
-              <input id="budget" type="number" min="0" step="1" defaultValue="1200" />
-            </label>
-            <label className="target-check" style={{ marginLeft: '16px' }}>
-              <input id="fast-learner" type="checkbox" />
-              Fast Learner (-10% cost)
-            </label>
-            <div className="spacer"></div>
-            <div id="lib-status" className="status" aria-live="polite"></div>
-          </div>
-        </section>
+        <Card className="glass-card">
+          <CardContent className="pt-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4">
+              <div className="flex-1 min-w-[220px] max-w-md">
+                <Label htmlFor="budget" className="text-sm font-medium mb-2 block">
+                  Skill Points Budget
+                </Label>
+                <Input id="budget" type="number" min="0" step="1" defaultValue="1200" />
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox id="fast-learner" />
+                <Label htmlFor="fast-learner" className="cursor-pointer">
+                  Fast Learner (-10% cost)
+                </Label>
+              </div>
+              <div id="lib-status" className="text-sm text-muted-foreground text-right" aria-live="polite"></div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Race configuration + Ideal builder */}
-        <section className="card card-elevated race-config-container" aria-labelledby="raceConfigTitle">
-          <div className="race-card-grid">
-            <div className="race-config-pane">
-              <div className="race-card-header">
-                <h2 id="raceConfigTitle">Race Configuration</h2>
-                <p className="muted">Set your target affinities so the optimizer scores skills appropriately.</p>
+        <Card className="glass-card race-config-container" aria-labelledby="raceConfigTitle">
+          <CardContent className="pt-6 pb-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-12">
+              {/* Race Config Pane */}
+              <div className="space-y-6 min-w-0">
+                <div>
+                  <CardTitle id="raceConfigTitle" className="text-xl mb-3">Race Configuration</CardTitle>
+                  <CardDescription className="text-sm">
+                    Set your target affinities so the optimizer scores skills appropriately.
+                  </CardDescription>
+                </div>
+                
+                <div className="space-y-5">
+                  <div>
+                    <div className="text-sm font-medium mb-2">Track</div>
+                    <div className="flex flex-wrap gap-3 items-end">
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="cfg-turf" className="text-sm font-medium whitespace-nowrap">Turf</Label>
+                        <Select id="cfg-turf" defaultValue="A">
+                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GRADE_OPTIONS.map(grade => (
+                              <SelectItem key={grade} value={grade}>{grade}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="cfg-dirt" className="text-sm font-medium whitespace-nowrap">Dirt</Label>
+                        <Select id="cfg-dirt" defaultValue="G">
+                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GRADE_OPTIONS.map(grade => (
+                              <SelectItem key={grade} value={grade}>{grade}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-sm font-medium mb-2">Distance</div>
+                    <div className="grid grid-cols-2 gap-2.5 items-center" style={{ gridTemplateColumns: 'repeat(2, 1fr)', width: '100%' }}>
+                      <div className="flex flex-row items-center gap-2 w-full">
+                        <Label htmlFor="cfg-sprint" className="text-xs font-medium leading-tight whitespace-nowrap">Sprint</Label>
+                        <Select id="cfg-sprint" defaultValue="D">
+                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GRADE_OPTIONS.map(grade => (
+                              <SelectItem key={grade} value={grade}>{grade}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex flex-row items-center gap-2 w-full">
+                        <Label htmlFor="cfg-mile" className="text-xs font-medium leading-tight whitespace-nowrap">Mile</Label>
+                        <Select id="cfg-mile" defaultValue="C">
+                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GRADE_OPTIONS.map(grade => (
+                              <SelectItem key={grade} value={grade}>{grade}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex flex-row items-center gap-2 w-full">
+                        <Label htmlFor="cfg-medium" className="text-xs font-medium leading-tight whitespace-nowrap">Medium</Label>
+                        <Select id="cfg-medium" defaultValue="A">
+                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GRADE_OPTIONS.map(grade => (
+                              <SelectItem key={grade} value={grade}>{grade}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex flex-row items-center gap-2 w-full">
+                        <Label htmlFor="cfg-long" className="text-xs font-medium leading-tight whitespace-nowrap">Long</Label>
+                        <Select id="cfg-long" defaultValue="B">
+                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GRADE_OPTIONS.map(grade => (
+                              <SelectItem key={grade} value={grade}>{grade}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-sm font-medium mb-2">Strategy</div>
+                    <div className="grid grid-cols-2 gap-2.5 items-center" style={{ gridTemplateColumns: 'repeat(2, 1fr)', width: '100%' }}>
+                      <div className="flex flex-row items-center gap-2 w-full">
+                        <Label htmlFor="cfg-front" className="text-xs font-medium leading-tight whitespace-nowrap">Front</Label>
+                        <Select id="cfg-front" defaultValue="A">
+                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GRADE_OPTIONS.map(grade => (
+                              <SelectItem key={grade} value={grade}>{grade}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex flex-row items-center gap-2 w-full">
+                        <Label htmlFor="cfg-pace" className="text-xs font-medium leading-tight whitespace-nowrap">Pace</Label>
+                        <Select id="cfg-pace" defaultValue="B">
+                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GRADE_OPTIONS.map(grade => (
+                              <SelectItem key={grade} value={grade}>{grade}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex flex-row items-center gap-2 w-full">
+                        <Label htmlFor="cfg-late" className="text-xs font-medium leading-tight whitespace-nowrap">Late</Label>
+                        <Select id="cfg-late" defaultValue="C">
+                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GRADE_OPTIONS.map(grade => (
+                              <SelectItem key={grade} value={grade}>{grade}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex flex-row items-center gap-2 w-full">
+                        <Label htmlFor="cfg-end" className="text-xs font-medium leading-tight whitespace-nowrap">End</Label>
+                        <Select id="cfg-end" defaultValue="B">
+                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GRADE_OPTIONS.map(grade => (
+                              <SelectItem key={grade} value={grade}>{grade}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="opt-grid">
-                <div className="kv-row">
-                  <div className="k">Track</div>
-                  <div className="v row">
-                    <label> Turf
-                      <select id="cfg-turf" defaultValue="A">
-                        <option value="S">S</option><option value="A">A</option><option value="B">B</option>
-                        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
-                        <option value="F">F</option><option value="G">G</option>
-                      </select>
-                    </label>
-                    <label> Dirt
-                      <select id="cfg-dirt" defaultValue="G">
-                        <option value="S">S</option><option value="A">A</option><option value="B">B</option>
-                        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
-                        <option value="F">F</option><option value="G">G</option>
-                      </select>
-                    </label>
+
+              {/* Ideal Builder Pane */}
+              <div className="space-y-6 min-w-0">
+                <div>
+                  <CardTitle id="autoBuilderTitle" className="text-xl mb-3">Ideal Skill Builder</CardTitle>
+                  <CardDescription className="text-sm">
+                    Pick the aptitudes you care about &mdash; matching rows will be highlighted.
+                  </CardDescription>
+                </div>
+                
+                <div className="space-y-5">
+                  <div>
+                    <div className="text-sm font-medium mb-3">Track</div>
+                    <div className="flex flex-wrap gap-3">
+                      <div className="flex items-center gap-2">
+                        <Checkbox name="auto-target" id="auto-target-turf" value="turf" defaultChecked />
+                        <Label htmlFor="auto-target-turf" className="cursor-pointer text-sm">Turf</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Checkbox name="auto-target" id="auto-target-dirt" value="dirt" defaultChecked />
+                        <Label htmlFor="auto-target-dirt" className="cursor-pointer text-sm">Dirt</Label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-sm font-medium mb-3">Distance</div>
+                    <div className="flex flex-wrap gap-3">
+                      <div className="flex items-center gap-2">
+                        <Checkbox name="auto-target" id="auto-target-sprint" value="sprint" defaultChecked />
+                        <Label htmlFor="auto-target-sprint" className="cursor-pointer text-sm">Sprint</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Checkbox name="auto-target" id="auto-target-mile" value="mile" defaultChecked />
+                        <Label htmlFor="auto-target-mile" className="cursor-pointer text-sm">Mile</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Checkbox name="auto-target" id="auto-target-medium" value="medium" defaultChecked />
+                        <Label htmlFor="auto-target-medium" className="cursor-pointer text-sm">Medium</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Checkbox name="auto-target" id="auto-target-long" value="long" defaultChecked />
+                        <Label htmlFor="auto-target-long" className="cursor-pointer text-sm">Long</Label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-sm font-medium mb-3">Strategy</div>
+                    <div className="flex flex-wrap gap-3">
+                      <div className="flex items-center gap-2">
+                        <Checkbox name="auto-target" id="auto-target-front" value="front" defaultChecked />
+                        <Label htmlFor="auto-target-front" className="cursor-pointer text-sm">Front</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Checkbox name="auto-target" id="auto-target-pace" value="pace" defaultChecked />
+                        <Label htmlFor="auto-target-pace" className="cursor-pointer text-sm">Pace</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Checkbox name="auto-target" id="auto-target-late" value="late" defaultChecked />
+                        <Label htmlFor="auto-target-late" className="cursor-pointer text-sm">Late</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Checkbox name="auto-target" id="auto-target-end" value="end" defaultChecked />
+                        <Label htmlFor="auto-target-end" className="cursor-pointer text-sm">End</Label>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="kv-row">
-                  <div className="k">Distance</div>
-                  <div className="v row">
-                    <label> Sprint
-                      <select id="cfg-sprint" defaultValue="D">
-                        <option value="S">S</option><option value="A">A</option><option value="B">B</option>
-                        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
-                        <option value="F">F</option><option value="G">G</option>
-                      </select>
-                    </label>
-                    <label> Mile
-                      <select id="cfg-mile" defaultValue="C">
-                        <option value="S">S</option><option value="A">A</option><option value="B">B</option>
-                        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
-                        <option value="F">F</option><option value="G">G</option>
-                      </select>
-                    </label>
-                    <label> Medium
-                      <select id="cfg-medium" defaultValue="A">
-                        <option value="S">S</option><option value="A">A</option><option value="B">B</option>
-                        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
-                        <option value="F">F</option><option value="G">G</option>
-                      </select>
-                    </label>
-                    <label> Long
-                      <select id="cfg-long" defaultValue="B">
-                        <option value="S">S</option><option value="A">A</option><option value="B">B</option>
-                        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
-                        <option value="F">F</option><option value="G">G</option>
-                      </select>
-                    </label>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 pt-2">
+                  <div className="flex items-center gap-2">
+                    <Checkbox name="auto-target" id="auto-target-general" value="general" defaultChecked />
+                    <Label htmlFor="auto-target-general" className="cursor-pointer text-sm">General</Label>
                   </div>
-                </div>
-
-                <div className="kv-row">
-                  <div className="k">Strategy</div>
-                  <div className="v row">
-                    <label> Front
-                      <select id="cfg-front" defaultValue="A">
-                        <option value="S">S</option><option value="A">A</option><option value="B">B</option>
-                        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
-                        <option value="F">F</option><option value="G">G</option>
-                      </select>
-                    </label>
-                    <label> Pace
-                      <select id="cfg-pace" defaultValue="B">
-                        <option value="S">S</option><option value="A">A</option><option value="B">B</option>
-                        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
-                        <option value="F">F</option><option value="G">G</option>
-                      </select>
-                    </label>
-                    <label> Late
-                      <select id="cfg-late" defaultValue="C">
-                        <option value="S">S</option><option value="A">A</option><option value="B">B</option>
-                        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
-                        <option value="F">F</option><option value="G">G</option>
-                      </select>
-                    </label>
-                    <label> End
-                      <select id="cfg-end" defaultValue="B">
-                        <option value="S">S</option><option value="A">A</option><option value="B">B</option>
-                        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
-                        <option value="F">F</option><option value="G">G</option>
-                      </select>
-                    </label>
-                  </div>
+                  <Button id="auto-build-btn" type="button" className="whitespace-nowrap">Generate Build</Button>
+                  <div id="auto-builder-status" className="text-sm text-muted-foreground flex-1" aria-live="polite"></div>
                 </div>
               </div>
             </div>
-            <div className="ideal-builder-pane">
-              <div className="ideal-header">
-                <h3 id="autoBuilderTitle">Ideal Skill Builder</h3>
-                <p className="muted">Pick the aptitudes you care about &mdash; matching rows will be highlighted.</p>
-              </div>
-              <div className="ideal-target-groups">
-                <div>
-                  <div className="target-group-title">Track</div>
-                  <div className="ideal-targets auto-targets">
-                    <label className="target-check"><input type="checkbox" name="auto-target" value="turf" defaultChecked /> Turf</label>
-                    <label className="target-check"><input type="checkbox" name="auto-target" value="dirt" defaultChecked /> Dirt</label>
-                  </div>
-                </div>
-                <div>
-                  <div className="target-group-title">Distance</div>
-                  <div className="ideal-targets auto-targets">
-                    <label className="target-check"><input type="checkbox" name="auto-target" value="sprint" defaultChecked /> Sprint</label>
-                    <label className="target-check"><input type="checkbox" name="auto-target" value="mile" defaultChecked /> Mile</label>
-                    <label className="target-check"><input type="checkbox" name="auto-target" value="medium" defaultChecked /> Medium</label>
-                    <label className="target-check"><input type="checkbox" name="auto-target" value="long" defaultChecked /> Long</label>
-                  </div>
-                </div>
-                <div>
-                  <div className="target-group-title">Strategy</div>
-                  <div className="ideal-targets auto-targets">
-                    <label className="target-check"><input type="checkbox" name="auto-target" value="front" defaultChecked /> Front</label>
-                    <label className="target-check"><input type="checkbox" name="auto-target" value="pace" defaultChecked /> Pace</label>
-                    <label className="target-check"><input type="checkbox" name="auto-target" value="late" defaultChecked /> Late</label>
-                    <label className="target-check"><input type="checkbox" name="auto-target" value="end" defaultChecked /> End</label>
-                  </div>
-                </div>
-              </div>
-              <div className="ideal-actions">
-                <label className="target-check general-check"><input type="checkbox" name="auto-target" value="general" defaultChecked /> General</label>
-                <button id="auto-build-btn" className="btn" type="button">Generate Build</button>
-                <div id="auto-builder-status" className="status muted" aria-live="polite"></div>
-              </div>
-            </div>
-          </div>
-        </section>
+          </CardContent>
+        </Card>
 
         {/* Rating calculator */}
-        <section className="card card-elevated" id="rating-card" aria-labelledby="ratingCalcTitle">
-          <div className="toolbar rating-card-toolbar">
-            <div className="rating-card-header">
-              <h2 id="ratingCalcTitle">Rating Calculator</h2>
-              <p className="muted">
+        <Card className="glass-card" id="rating-card" aria-labelledby="ratingCalcTitle">
+          <CardHeader>
+            <div>
+              <CardTitle id="ratingCalcTitle" className="text-xl mb-2">Rating Calculator</CardTitle>
+              <CardDescription>
                 Enter your Uma&apos;s final stats, star rarity, and unique skill level.
                 The optimized skill score fills in automatically to project the final evaluation.
-              </p>
+              </CardDescription>
             </div>
-            <div className="spacer"></div>
-            <div className="pill rating-total-pill">
-              <div className="label">Projected Rating</div>
-              <div id="rating-total" className="value">0</div>
-              <div className="rating-progress" aria-live="polite">
-                <div className="rating-progress-label">
-                  <span id="rating-next-label">Next: G+ at 300</span>
-                  <span id="rating-next-needed">+0</span>
-                </div>
-                <div className="rating-progress-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={0}>
-                  <div id="rating-progress-fill" className="rating-progress-fill"></div>
+            <div className="flex items-center gap-4 flex-shrink-0">
+              <div className="pill rating-total-pill bg-primary/10 border border-primary/20 rounded-lg p-3 min-w-[140px]">
+                <div className="text-xs font-medium text-muted-foreground mb-1">Projected Rating</div>
+                <div id="rating-total" className="text-2xl font-bold">0</div>
+                <div className="rating-progress mt-2" aria-live="polite">
+                  <div className="rating-progress-label flex justify-between text-xs mb-1">
+                    <span id="rating-next-label">Next: G+ at 300</span>
+                    <span id="rating-next-needed">+0</span>
+                  </div>
+                  <div className="rating-progress-bar h-2 bg-secondary rounded-full overflow-hidden" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={0}>
+                    <div id="rating-progress-fill" className="rating-progress-fill h-full bg-gradient-to-r from-blue-500 to-green-500 transition-all"></div>
+                  </div>
                 </div>
               </div>
+              <div className="rating-badge" id="rating-badge">
+                <div id="rating-badge-sprite" className="rating-badge-sprite w-24 h-24" role="img" aria-label="Projected rank badge"></div>
+              </div>
             </div>
-            <div className="rating-badge" id="rating-badge">
-              <div id="rating-badge-sprite" className="rating-badge-sprite" role="img"
-                   aria-label="Projected rank badge"></div>
+          </CardHeader>
+          <CardContent>
+            <div className="rating-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 mb-6">
+              <div className="space-y-2">
+                <Label htmlFor="stat-speed">Speed</Label>
+                <Input id="stat-speed" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="stat-stamina">Stamina</Label>
+                <Input id="stat-stamina" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="stat-power">Power</Label>
+                <Input id="stat-power" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="stat-guts">Guts</Label>
+                <Input id="stat-guts" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="stat-wisdom">Wisdom</Label>
+                <Input id="stat-wisdom" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="star-level">Star Level</Label>
+                <Select id="star-level" defaultValue="3">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5].map(level => (
+                      <SelectItem key={level} value={String(level)}>★{level}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="unique-level">Unique Skill Level</Label>
+                <Select id="unique-level" defaultValue="3">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5, 6].map(level => (
+                      <SelectItem key={level} value={String(level)}>Lv{level}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
-          <div className="rating-grid">
-            <label>Speed
-              <input id="stat-speed" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" />
-            </label>
-            <label>Stamina
-              <input id="stat-stamina" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" />
-            </label>
-            <label>Power
-              <input id="stat-power" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" />
-            </label>
-            <label>Guts
-              <input id="stat-guts" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" />
-            </label>
-            <label>Wisdom
-              <input id="stat-wisdom" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" />
-            </label>
-            <label>Star Level
-              <select id="star-level" defaultValue="3">
-                <option value="1">★1</option>
-                <option value="2">★2</option>
-                <option value="3">★3</option>
-                <option value="4">★4</option>
-                <option value="5">★5</option>
-              </select>
-            </label>
-            <label>Unique Skill Level
-              <select id="unique-level" defaultValue="3">
-                <option value="1">Lv1</option>
-                <option value="2">Lv2</option>
-                <option value="3">Lv3</option>
-                <option value="4">Lv4</option>
-                <option value="5">Lv5</option>
-                <option value="6">Lv6</option>
-              </select>
-            </label>
-          </div>
-          <div className="rating-summary">
-            <div className="pill">
-              <div className="label">Stats Score</div>
-              <div id="rating-stats-score" className="value">0</div>
+            
+            <div className="rating-summary flex flex-wrap gap-5 justify-start">
+              <Badge variant="secondary" className="px-4 py-2">
+                <div className="text-xs font-medium mb-1">Stats Score</div>
+                <div id="rating-stats-score" className="text-lg font-bold">0</div>
+              </Badge>
+              <Badge variant="secondary" className="px-4 py-2">
+                <div className="text-xs font-medium mb-1">Skill Score</div>
+                <div id="rating-skills-score" className="text-lg font-bold">0</div>
+              </Badge>
+              <Badge variant="secondary" className="px-4 py-2">
+                <div className="text-xs font-medium mb-1">Unique Bonus</div>
+                <div id="rating-unique-bonus" className="text-lg font-bold">0</div>
+              </Badge>
             </div>
-            <div className="pill">
-              <div className="label">Skill Score</div>
-              <div id="rating-skills-score" className="value">0</div>
-            </div>
-            <div className="pill">
-              <div className="label">Unique Bonus</div>
-              <div id="rating-unique-bonus" className="value">0</div>
-            </div>
-          </div>
-        </section>
+          </CardContent>
+        </Card>
 
         {/* Results */}
-        <section className="card card-elevated" style={{ marginBottom: '16px' }}>
-          <h3 style={{ margin: '.2rem 0 .5rem 0' }}>Results</h3>
-          <div id="results" className="results">
-            <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
-              <div className="pill"><b>Best Score:</b> <span id="best-score">0</span></div>
-              <div className="pill"><b>Used Points:</b> <span id="used-points">0</span></div>
-              <div className="pill"><b>Total Points:</b> <span id="total-points">0</span></div>
-              <div className="pill"><b>Remaining:</b> <span id="remaining-points">0</span></div>
+        <Card className="glass-card mb-4">
+          <CardHeader>
+            <CardTitle>Results</CardTitle>
+          </CardHeader>
+          <CardContent id="results" className="space-y-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <Badge variant="outline" className="p-3 justify-start">
+                <span className="font-semibold mr-2">Best Score:</span>
+                <span id="best-score">0</span>
+              </Badge>
+              <Badge variant="outline" className="p-3 justify-start">
+                <span className="font-semibold mr-2">Used Points:</span>
+                <span id="used-points">0</span>
+              </Badge>
+              <Badge variant="outline" className="p-3 justify-start">
+                <span className="font-semibold mr-2">Total Points:</span>
+                <span id="total-points">0</span>
+              </Badge>
+              <Badge variant="outline" className="p-3 justify-start">
+                <span className="font-semibold mr-2">Remaining:</span>
+                <span id="remaining-points">0</span>
+              </Badge>
             </div>
-            <div className="results-list" id="selected-list" style={{ marginTop: '.75rem' }}></div>
-          </div>
-        </section>
+            <div className="results-list" id="selected-list"></div>
+          </CardContent>
+        </Card>
 
-        {/* Rows builder (auto-add; live optimize) */}
-        <section className="card card-elevated">
-          <div className="toolbar" role="group" aria-label="Skill rows">
-            <span className="muted">Tip: just enter the skill name and cost - its type auto-detects</span>
-            <div className="spacer"></div>
-            <button id="import-screenshot" className="btn btn-secondary" type="button">Import from Screenshot</button>
-            <input type="file" id="screenshot-file-input" accept="image/*" style={{ display: 'none' }} />
-            <button id="copy-build" className="btn btn-secondary" type="button">Copy Build</button>
-            <button id="load-build" className="btn btn-secondary" type="button">Load Build</button>
-            <button id="clear-all" className="btn" type="button">Clear All</button>
-          </div>
-          <div id="ocr-import-status" className="status muted" style={{ marginTop: '8px' }} aria-live="polite"></div>
-          <div id="rows" className="rows"></div>
-        </section>
+        {/* Rows builder */}
+        <Card className="glass-card">
+          <CardContent className="pt-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6" role="group" aria-label="Skill rows">
+              <span className="text-sm text-muted-foreground">Tip: just enter the skill name and cost - its type auto-detects</span>
+              <div className="flex flex-wrap gap-3">
+                <Button id="import-screenshot" variant="secondary" type="button">Import from Screenshot</Button>
+                <input type="file" id="screenshot-file-input" accept="image/*" className="hidden" />
+                <Button id="copy-build" variant="secondary" type="button">Copy Build</Button>
+                <Button id="load-build" variant="secondary" type="button">Load Build</Button>
+                <Button id="clear-all" variant="destructive" type="button">Clear All</Button>
+              </div>
+            </div>
+            <div id="ocr-import-status" className="text-sm text-muted-foreground mb-4" aria-live="polite"></div>
+            <div id="rows" className="rows space-y-2"></div>
+          </CardContent>
+        </Card>
       </main>
 
-      <div id="rating-float" className="rating-float" aria-live="polite">
-        <div className="rating-float-badge" aria-hidden="true">
-          <div id="rating-float-badge-sprite" className="rating-float-badge-sprite"></div>
+      <div id="rating-float" className="rating-float fixed top-20 right-5 z-70 opacity-0 pointer-events-none transition-all" aria-live="polite">
+        <div className="rating-float-badge w-9 h-9 rounded-full bg-secondary flex items-center justify-center" aria-hidden="true">
+          <div id="rating-float-badge-sprite" className="rating-float-badge-sprite w-8 h-8"></div>
         </div>
         <div className="rating-float-meta">
-          <div className="label">Projected</div>
-          <div id="rating-float-total" className="value">0</div>
+          <div className="text-xs uppercase tracking-wider text-muted-foreground font-bold">Projected</div>
+          <div id="rating-float-total" className="text-base font-bold">0</div>
         </div>
       </div>
 

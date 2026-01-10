@@ -20,6 +20,23 @@
     speed2xUma: qs("#speed2xUma")
   };
 
+  // Helper to check if Radix UI checkbox is checked (shadcn checkbox)
+  const isChecked = (el) => {
+    if (!el) return false;
+    // Check for standard input checkbox
+    if (el.type === 'checkbox' || el.tagName === 'INPUT') {
+      return el.checked;
+    }
+    // Check for Radix UI checkbox (shadcn) - uses data-state="checked"
+    // Radix UI checkbox has data-slot="checkbox" and data-state="checked" when checked
+    const state = el.getAttribute('data-state');
+    if (state === 'checked') return true;
+    // Also check aria-checked for accessibility
+    const ariaChecked = el.getAttribute('aria-checked');
+    if (ariaChecked === 'true') return true;
+    return false;
+  };
+
   const store = {
     getExclusions() {
       try { return JSON.parse(localStorage.getItem("exclude_support_slugs") || "[]"); }
@@ -31,8 +48,8 @@
   const rarityClass = (r) => `badge-${r}`;
 
 // Speed control: default is slower for drama; 2× toggle makes it faster
-function getSpeedFactorDeck(){ return (els.speed2x && els.speed2x.checked) ? 0.5 : 1.0; }
-function getSpeedFactorUma(){ return (els.speed2xUma && els.speed2xUma.checked) ? 0.5 : 1.0; }
+function getSpeedFactorDeck(){ return (els.speed2x && isChecked(els.speed2x)) ? 0.5 : 1.0; }
+function getSpeedFactorUma(){ return (els.speed2xUma && isChecked(els.speed2xUma)) ? 0.5 : 1.0; }
 
   function initialsOf(title){
     const cleaned = String(title || "")
@@ -144,9 +161,9 @@ function getSpeedFactorUma(){ return (els.speed2xUma && els.speed2xUma.checked) 
   function renderDeckStatic(){
     const ex = new Set(store.getExclusions());
     const allowedR = new Set([
-      els.fSSR?.checked ? "SSR" : null,
-      els.fSR?.checked  ? "SR"  : null,
-      els.fR?.checked   ? "R"   : null,
+      isChecked(els.fSSR) ? "SSR" : null,
+      isChecked(els.fSR)  ? "SR"  : null,
+      isChecked(els.fR)   ? "R"   : null,
     ].filter(Boolean));
 
     const pool = supports.filter(s => allowedR.has(s.rarity) && !ex.has(s.slug));
@@ -192,9 +209,9 @@ function getSpeedFactorUma(){ return (els.speed2xUma && els.speed2xUma.checked) 
 
     const ex = new Set(store.getExclusions());
     const allowedR = new Set([
-      els.fSSR?.checked ? "SSR" : null,
-      els.fSR?.checked  ? "SR"  : null,
-      els.fR?.checked   ? "R"   : null,
+      isChecked(els.fSSR) ? "SSR" : null,
+      isChecked(els.fSR)  ? "SR"  : null,
+      isChecked(els.fR)   ? "R"   : null,
     ].filter(Boolean));
 
     const pool = supports.filter(s => allowedR.has(s.rarity) && !ex.has(s.slug));
@@ -387,8 +404,20 @@ const duration = Math.max(600, Math.round(durationBase * getSpeedFactorUma()));
 
   // ------- Events (this was missing) -------
   function wireEvents(){
-    // Filters & deck
-    [els.fSSR, els.fSR, els.fR].forEach(cb => cb?.addEventListener("change", renderDeckStatic));
+    // Filters & deck - Radix UI checkboxes need special handling
+    const handleCheckboxChange = (cb) => {
+      // Small delay to let Radix UI update the data-state attribute
+      setTimeout(() => {
+        renderDeckStatic();
+      }, 50);
+    };
+    
+    [els.fSSR, els.fSR, els.fR].forEach(cb => {
+      if (cb) {
+        // Radix UI checkboxes are button elements, listen for click
+        cb.addEventListener("click", () => handleCheckboxChange(cb));
+      }
+    });
     els.rollBtn?.addEventListener("click", startDeckRoll);
 
     // Exclusions
@@ -413,25 +442,47 @@ const duration = Math.max(600, Math.round(durationBase * getSpeedFactorUma()));
     els.pickUmaBtn?.addEventListener("click", startUmaCaseRoll);
   }
 
-  // Init
-  (async () => {
-    try{
-      const [hints, umas] = await Promise.all([
-        fetchJSON(HINTS_URL, "/support_hints.json"),
-        fetchJSON(UMA_URL, "/uma_data.json")
-      ]);
-      supports = mapSupports(hints);
-      umaList = mapUmas(umas);
-      buildDatalist();
-      renderExclusions();
-      renderDeckStatic();  // initial deck render
-      wireEvents();        // <-- attach all listeners
-      // Uma area starts idle until user rolls
-      els.umaResult.innerHTML = `<div class="inline-note">Click "Pick Random Uma" to roll.</div>`;
-    }catch(e){
-      console.error(e);
-      els.deckResults.innerHTML = `<div class="inline-note">Failed to load data.</div>`;
-      els.umaResult.innerHTML = `<div class="inline-note">Failed to load data.</div>`;
+  // Init - wait for DOM to be ready
+  function init(){
+    // Check if all required elements exist
+    const missing = Object.entries(els).filter(([name, el]) => !el && name !== 'supportList').map(([name]) => name);
+    if (missing.length > 0) {
+      console.warn('Randomizer: Missing elements:', missing);
+      // Retry after a short delay if elements aren't ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+        return;
+      }
+      setTimeout(init, 100);
+      return;
     }
-  })();
+
+    (async () => {
+      try{
+        const [hints, umas] = await Promise.all([
+          fetchJSON(HINTS_URL, "/support_hints.json"),
+          fetchJSON(UMA_URL, "/uma_data.json")
+        ]);
+        supports = mapSupports(hints);
+        umaList = mapUmas(umas);
+        buildDatalist();
+        renderExclusions();
+        renderDeckStatic();  // initial deck render
+        wireEvents();        // <-- attach all listeners
+        // Uma area starts idle until user rolls
+        els.umaResult.innerHTML = `<div class="inline-note">Click "Pick Random Uma" to roll.</div>`;
+      }catch(e){
+        console.error('Randomizer init error:', e);
+        if (els.deckResults) els.deckResults.innerHTML = `<div class="inline-note">Failed to load data.</div>`;
+        if (els.umaResult) els.umaResult.innerHTML = `<div class="inline-note">Failed to load data.</div>`;
+      }
+    })();
+  }
+
+  // Start initialization
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
