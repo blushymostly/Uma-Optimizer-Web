@@ -41,17 +41,17 @@ export default function OptimizerPage() {
                   <div className="k">Track</div>
                   <div className="v row">
                     <label> Turf
-                      <select id="cfg-turf">
-                        <option value="S">S</option><option value="A" selected>A</option><option value="B">B</option>
+                      <select id="cfg-turf" defaultValue="A">
+                        <option value="S">S</option><option value="A">A</option><option value="B">B</option>
                         <option value="C">C</option><option value="D">D</option><option value="E">E</option>
                         <option value="F">F</option><option value="G">G</option>
                       </select>
                     </label>
                     <label> Dirt
-                      <select id="cfg-dirt">
+                      <select id="cfg-dirt" defaultValue="G">
                         <option value="S">S</option><option value="A">A</option><option value="B">B</option>
                         <option value="C">C</option><option value="D">D</option><option value="E">E</option>
-                        <option value="F">F</option><option value="G" selected>G</option>
+                        <option value="F">F</option><option value="G">G</option>
                       </select>
                     </label>
                   </div>
@@ -61,29 +61,29 @@ export default function OptimizerPage() {
                   <div className="k">Distance</div>
                   <div className="v row">
                     <label> Sprint
-                      <select id="cfg-sprint">
+                      <select id="cfg-sprint" defaultValue="D">
                         <option value="S">S</option><option value="A">A</option><option value="B">B</option>
-                        <option value="C">C</option><option value="D" selected>D</option><option value="E">E</option>
+                        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
                         <option value="F">F</option><option value="G">G</option>
                       </select>
                     </label>
                     <label> Mile
-                      <select id="cfg-mile">
+                      <select id="cfg-mile" defaultValue="C">
                         <option value="S">S</option><option value="A">A</option><option value="B">B</option>
-                        <option value="C" selected>C</option><option value="D">D</option><option value="E">E</option>
+                        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
                         <option value="F">F</option><option value="G">G</option>
                       </select>
                     </label>
                     <label> Medium
-                      <select id="cfg-medium">
-                        <option value="S">S</option><option value="A" selected>A</option><option value="B">B</option>
+                      <select id="cfg-medium" defaultValue="A">
+                        <option value="S">S</option><option value="A">A</option><option value="B">B</option>
                         <option value="C">C</option><option value="D">D</option><option value="E">E</option>
                         <option value="F">F</option><option value="G">G</option>
                       </select>
                     </label>
                     <label> Long
-                      <select id="cfg-long">
-                        <option value="S">S</option><option value="A">A</option><option value="B" selected>B</option>
+                      <select id="cfg-long" defaultValue="B">
+                        <option value="S">S</option><option value="A">A</option><option value="B">B</option>
                         <option value="C">C</option><option value="D">D</option><option value="E">E</option>
                         <option value="F">F</option><option value="G">G</option>
                       </select>
@@ -95,29 +95,29 @@ export default function OptimizerPage() {
                   <div className="k">Strategy</div>
                   <div className="v row">
                     <label> Front
-                      <select id="cfg-front">
-                        <option value="S">S</option><option value="A" selected>A</option><option value="B">B</option>
+                      <select id="cfg-front" defaultValue="A">
+                        <option value="S">S</option><option value="A">A</option><option value="B">B</option>
                         <option value="C">C</option><option value="D">D</option><option value="E">E</option>
                         <option value="F">F</option><option value="G">G</option>
                       </select>
                     </label>
                     <label> Pace
-                      <select id="cfg-pace">
-                        <option value="S">S</option><option value="A">A</option><option value="B" selected>B</option>
+                      <select id="cfg-pace" defaultValue="B">
+                        <option value="S">S</option><option value="A">A</option><option value="B">B</option>
                         <option value="C">C</option><option value="D">D</option><option value="E">E</option>
                         <option value="F">F</option><option value="G">G</option>
                       </select>
                     </label>
                     <label> Late
-                      <select id="cfg-late">
+                      <select id="cfg-late" defaultValue="C">
                         <option value="S">S</option><option value="A">A</option><option value="B">B</option>
-                        <option value="C" selected>C</option><option value="D">D</option><option value="E">E</option>
+                        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
                         <option value="F">F</option><option value="G">G</option>
                       </select>
                     </label>
                     <label> End
-                      <select id="cfg-end">
-                        <option value="S">S</option><option value="A">A</option><option value="B" selected>B</option>
+                      <select id="cfg-end" defaultValue="B">
+                        <option value="S">S</option><option value="A">A</option><option value="B">B</option>
                         <option value="C">C</option><option value="D">D</option><option value="E">E</option>
                         <option value="F">F</option><option value="G">G</option>
                       </select>
@@ -213,19 +213,19 @@ export default function OptimizerPage() {
               <input id="stat-wisdom" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" />
             </label>
             <label>Star Level
-              <select id="star-level">
+              <select id="star-level" defaultValue="3">
                 <option value="1">★1</option>
                 <option value="2">★2</option>
-                <option value="3" selected>★3</option>
+                <option value="3">★3</option>
                 <option value="4">★4</option>
                 <option value="5">★5</option>
               </select>
             </label>
             <label>Unique Skill Level
-              <select id="unique-level">
+              <select id="unique-level" defaultValue="3">
                 <option value="1">Lv1</option>
                 <option value="2">Lv2</option>
-                <option value="3" selected>Lv3</option>
+                <option value="3">Lv3</option>
                 <option value="4">Lv4</option>
                 <option value="5">Lv5</option>
                 <option value="6">Lv6</option>
