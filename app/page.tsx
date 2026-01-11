@@ -61,8 +61,8 @@ export default function OptimizerPage() {
                     <div className="flex flex-wrap gap-3 items-end">
                       <div className="flex items-center gap-2">
                         <Label htmlFor="cfg-turf" className="text-sm font-medium whitespace-nowrap">Turf</Label>
-                        <Select id="cfg-turf" defaultValue="A">
-                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                        <Select defaultValue="A">
+                          <SelectTrigger id="cfg-turf" className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -74,8 +74,8 @@ export default function OptimizerPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Label htmlFor="cfg-dirt" className="text-sm font-medium whitespace-nowrap">Dirt</Label>
-                        <Select id="cfg-dirt" defaultValue="G">
-                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                        <Select defaultValue="G">
+                          <SelectTrigger id="cfg-dirt" className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -93,8 +93,8 @@ export default function OptimizerPage() {
                     <div className="grid grid-cols-2 gap-2.5 items-center" style={{ gridTemplateColumns: 'repeat(2, 1fr)', width: '100%' }}>
                       <div className="flex flex-row items-center gap-2 w-full">
                         <Label htmlFor="cfg-sprint" className="text-xs font-medium leading-tight whitespace-nowrap">Sprint</Label>
-                        <Select id="cfg-sprint" defaultValue="D">
-                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                        <Select defaultValue="D">
+                          <SelectTrigger id="cfg-sprint" className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -106,8 +106,8 @@ export default function OptimizerPage() {
                       </div>
                       <div className="flex flex-row items-center gap-2 w-full">
                         <Label htmlFor="cfg-mile" className="text-xs font-medium leading-tight whitespace-nowrap">Mile</Label>
-                        <Select id="cfg-mile" defaultValue="C">
-                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                        <Select defaultValue="C">
+                          <SelectTrigger id="cfg-mile" className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -119,8 +119,8 @@ export default function OptimizerPage() {
                       </div>
                       <div className="flex flex-row items-center gap-2 w-full">
                         <Label htmlFor="cfg-medium" className="text-xs font-medium leading-tight whitespace-nowrap">Medium</Label>
-                        <Select id="cfg-medium" defaultValue="A">
-                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                        <Select defaultValue="A">
+                          <SelectTrigger id="cfg-medium" className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -132,8 +132,8 @@ export default function OptimizerPage() {
                       </div>
                       <div className="flex flex-row items-center gap-2 w-full">
                         <Label htmlFor="cfg-long" className="text-xs font-medium leading-tight whitespace-nowrap">Long</Label>
-                        <Select id="cfg-long" defaultValue="B">
-                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                        <Select defaultValue="B">
+                          <SelectTrigger id="cfg-long" className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -151,8 +151,8 @@ export default function OptimizerPage() {
                     <div className="grid grid-cols-2 gap-2.5 items-center" style={{ gridTemplateColumns: 'repeat(2, 1fr)', width: '100%' }}>
                       <div className="flex flex-row items-center gap-2 w-full">
                         <Label htmlFor="cfg-front" className="text-xs font-medium leading-tight whitespace-nowrap">Front</Label>
-                        <Select id="cfg-front" defaultValue="A">
-                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                        <Select defaultValue="A">
+                          <SelectTrigger id="cfg-front" className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -164,8 +164,8 @@ export default function OptimizerPage() {
                       </div>
                       <div className="flex flex-row items-center gap-2 w-full">
                         <Label htmlFor="cfg-pace" className="text-xs font-medium leading-tight whitespace-nowrap">Pace</Label>
-                        <Select id="cfg-pace" defaultValue="B">
-                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                        <Select defaultValue="B">
+                          <SelectTrigger id="cfg-pace" className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -177,8 +177,8 @@ export default function OptimizerPage() {
                       </div>
                       <div className="flex flex-row items-center gap-2 w-full">
                         <Label htmlFor="cfg-late" className="text-xs font-medium leading-tight whitespace-nowrap">Late</Label>
-                        <Select id="cfg-late" defaultValue="C">
-                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                        <Select defaultValue="C">
+                          <SelectTrigger id="cfg-late" className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -190,8 +190,8 @@ export default function OptimizerPage() {
                       </div>
                       <div className="flex flex-row items-center gap-2 w-full">
                         <Label htmlFor="cfg-end" className="text-xs font-medium leading-tight whitespace-nowrap">End</Label>
-                        <Select id="cfg-end" defaultValue="B">
-                          <SelectTrigger className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
+                        <Select defaultValue="B">
+                          <SelectTrigger id="cfg-end" className="w-14 h-8 min-w-14 max-w-14 flex-shrink-0">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -341,8 +341,8 @@ export default function OptimizerPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="star-level">Star Level</Label>
-                <Select id="star-level" defaultValue="3">
-                  <SelectTrigger>
+                <Select defaultValue="3">
+                  <SelectTrigger id="star-level">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -354,8 +354,8 @@ export default function OptimizerPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="unique-level">Unique Skill Level</Label>
-                <Select id="unique-level" defaultValue="3">
-                  <SelectTrigger>
+                <Select defaultValue="3">
+                  <SelectTrigger id="unique-level">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
