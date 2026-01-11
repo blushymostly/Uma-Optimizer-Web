@@ -11,10 +11,6 @@
       "destination": "/hints.html"
     },
     {
-      "source": "/optimizer",
-      "destination": "/optimizer.html"
-    },
-    {
       "source": "/random",
       "destination": "/random.html"
     }

@@ -61,7 +61,7 @@ export default function Navigation() {
                 href={route.path}
                 className={cn(
                   'nav-link px-3 py-1.5 rounded-md text-sm font-medium transition-all',
-                  (pathname === route.path || (route.path === '/' && pathname === '/optimizer'))
+                  pathname === route.path
                     ? 'active bg-[rgba(74,144,226,0.15)] border border-[rgba(74,144,226,0.4)] text-[#4A90E2] font-semibold' 
                     : 'text-[#475569] hover:bg-[rgba(74,144,226,0.1)] hover:border-[rgba(74,144,226,0.3)] hover:text-[#4A90E2]'
                 )}
