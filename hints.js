@@ -82,7 +82,9 @@
   const hintList    = document.getElementById("hintList");
 
   // Fill datalist
-  hintList.innerHTML = allHints.map((h) => `<option value="${h}"></option>`).join("");
+  if (hintList) {
+    hintList.innerHTML = allHints.map((h) => `<option value="${h}"></option>`).join("");
+  }
 
   let selected = [];
 
@@ -99,19 +101,19 @@
       .split(",")
       .map((s) => s.trim().toUpperCase());
     if (q.length) selected = q;
-    if (mode === "OR") modeSelect.value = "OR";
-    fSSR.checked = rar.includes("SSR");
-    fSR.checked  = rar.includes("SR");
-    fR.checked   = rar.includes("R");
+    if (mode === "OR" && modeSelect) modeSelect.value = "OR";
+    if (fSSR) fSSR.checked = rar.includes("SSR");
+    if (fSR) fSR.checked = rar.includes("SR");
+    if (fR) fR.checked = rar.includes("R");
   }
   function writeToURL() {
     const p = new URLSearchParams();
     if (selected.length) p.set("hints", selected.map(encodeURIComponent).join(","));
-    p.set("mode", modeSelect.value);
+    if (modeSelect) p.set("mode", modeSelect.value);
     const rar = [
-      fSSR.checked ? "SSR" : null,
-      fSR.checked  ? "SR"  : null,
-      fR.checked   ? "R"   : null,
+      (fSSR && fSSR.checked) ? "SSR" : null,
+      (fSR && fSR.checked) ? "SR" : null,
+      (fR && fR.checked) ? "R" : null,
     ].filter(Boolean).join(",");
     p.set("rar", rar || "none");
     history.replaceState(null, "", `${location.pathname}?${p.toString()}`);
@@ -119,6 +121,7 @@
 
   // --- Rendering ---
   function renderChips() {
+    if (!chips) return;
     chips.innerHTML = selected
       .map(
         (h, i) =>
@@ -134,9 +137,9 @@
   }
 
   function rarityAllowed(r) {
-    if (r === "SSR") return fSSR.checked;
-    if (r === "SR")  return fSR.checked;
-    if (r === "R")   return fR.checked;
+    if (r === "SSR") return fSSR && fSSR.checked;
+    if (r === "SR")  return fSR && fSR.checked;
+    if (r === "R")   return fR && fR.checked;
     return true;
   }
 
@@ -147,7 +150,8 @@
     const cardHintsNorm = new Set(card.hints.map(norm));
     const wanted = selected.map(norm);
 
-    if (modeSelect.value === "AND") {
+    const mode = modeSelect ? modeSelect.value : "AND";
+    if (mode === "AND") {
       return wanted.every((w) =>
         Array.from(cardHintsNorm).some((h) => h.includes(w))
       );
@@ -171,6 +175,7 @@
   }
 
   function renderResults(list) {
+    if (!results) return;
     results.innerHTML = list.map((card) => {
       const rarityClass = `badge-${card.rarity}`; // badge-SSR | badge-SR | badge-R
       const thumb = card.img
@@ -192,6 +197,7 @@
   }
 
   function updateCounts(list) {
+    if (!counts) return;
     const totalCards = cards.length;
     const totalHints = allHints.length;
     counts.textContent = `${list.length} card(s) matched | ${totalCards} cards total | ${totalHints} unique hints`;
@@ -233,18 +239,35 @@
   }
 
   // Bindings (safe even if optional buttons don't exist)
-  addBtn.addEventListener("click", addFromInput);
-  hintInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addFromInput();
-    }
-  });
-  [modeSelect, fSSR, fSR, fR].forEach((el) => el.addEventListener("change", update));
-  clearBtn.addEventListener("click", () => {
-    selected = [];
-    update();
-  });
+  if (addBtn) {
+    addBtn.addEventListener("click", addFromInput);
+  }
+  if (hintInput) {
+    hintInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addFromInput();
+      }
+    });
+  }
+  if (modeSelect) {
+    modeSelect.addEventListener("change", update);
+  }
+  if (fSSR) {
+    fSSR.addEventListener("change", update);
+  }
+  if (fSR) {
+    fSR.addEventListener("change", update);
+  }
+  if (fR) {
+    fR.addEventListener("change", update);
+  }
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      selected = [];
+      update();
+    });
+  }
 
   if (copyLinkBtn) {
     copyLinkBtn.addEventListener("click", async () => {

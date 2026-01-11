@@ -9,8 +9,8 @@ import { FOOTER_LINKS } from './constants'
 const inter = Inter({ subsets: ['latin'], display: 'swap' })
 
 export const metadata: Metadata = {
-  title: 'UmaTools - Uma Musume Tools',
-  description: 'Uma Musume tools including skill optimizer, rating calculator, support hints, randomizer, and Umadle.',
+  title: 'Umaptimizer - Uma Musume Skill Optimizer',
+  description: 'Uma Musume skill optimizer, rating calculator, support hints, randomizer, and Umadle.',
   metadataBase: new URL('https://umtools.vercel.app'),
 }
 
@@ -31,14 +31,13 @@ export default function RootLayout({
               (function () {
                 try {
                   var pref = localStorage.getItem("umasearch-theme") || localStorage.getItem("umasearch-darkmode");
-                  var dark = false;
-                  if (pref === "dark") {
-                    dark = true;
-                  } else if (pref === "light") {
+                  var dark = true; // Default to dark mode
+                  if (pref === "light") {
                     dark = false;
-                  } else {
-                    dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+                  } else if (pref === "dark") {
+                    dark = true;
                   }
+                  // Always default to dark if no preference is set
                   if (dark) {
                     document.documentElement.classList.add("dark", "dark-mode");
                   } else {

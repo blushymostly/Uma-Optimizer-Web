@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 
 export const metadata: Metadata = {
-  title: 'UmaTools - Uma Musume Skill Optimizer & Rating Calculator',
+  title: 'Umaptimizer - Uma Musume Skill Optimizer & Rating Calculator',
   description: 'Uma Musume skill optimizer and rating calculator to plan builds, manage skill points, and project final ratings.',
 }
 
@@ -31,7 +31,7 @@ export default function OptimizerPage() {
                 </Label>
                 <Input id="budget" type="number" min="0" step="1" defaultValue="1200" />
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 h-10 w-[198px] pl-0 pr-0">
                 <Checkbox id="fast-learner" />
                 <Label htmlFor="fast-learner" className="cursor-pointer">
                   Fast Learner (-10% cost)
@@ -47,7 +47,7 @@ export default function OptimizerPage() {
           <CardContent className="pt-6 pb-6">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-12">
               {/* Race Config Pane */}
-              <div className="space-y-6 min-w-0">
+              <div className="space-y-6 min-w-0" style={{ width: '367px', paddingLeft: '0px', paddingRight: '0px' }}>
                 <div>
                   <CardTitle id="raceConfigTitle" className="text-xl mb-3">Race Configuration</CardTitle>
                   <CardDescription className="text-sm">
@@ -207,7 +207,7 @@ export default function OptimizerPage() {
               </div>
 
               {/* Ideal Builder Pane */}
-              <div className="space-y-6 min-w-0">
+              <div className="space-y-6 min-w-0" style={{ width: '278px', marginTop: '0px', marginBottom: '0px', marginLeft: '115px', marginRight: '115px' }}>
                 <div>
                   <CardTitle id="autoBuilderTitle" className="text-xl mb-3">Ideal Skill Builder</CardTitle>
                   <CardDescription className="text-sm">
@@ -320,24 +320,24 @@ export default function OptimizerPage() {
           <CardContent>
             <div className="rating-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 mb-6">
               <div className="space-y-2">
-                <Label htmlFor="stat-speed">Speed</Label>
-                <Input id="stat-speed" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" />
+                <Label htmlFor="stat-speed" style={{ color: 'rgba(66, 180, 250, 1)' }}>Speed</Label>
+                <Input id="stat-speed" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" style={{ color: 'rgba(66, 180, 250, 1)' }} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="stat-stamina">Stamina</Label>
-                <Input id="stat-stamina" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" />
+                <Label htmlFor="stat-stamina" style={{ color: 'rgba(255, 125, 110, 1)' }}>Stamina</Label>
+                <Input id="stat-stamina" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" style={{ color: 'rgba(255, 125, 110, 1)' }} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="stat-power">Power</Label>
-                <Input id="stat-power" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" />
+                <Label htmlFor="stat-power" style={{ color: 'rgba(255, 164, 12, 1)' }}>Power</Label>
+                <Input id="stat-power" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" style={{ color: 'rgba(255, 164, 12, 1)' }} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="stat-guts">Guts</Label>
-                <Input id="stat-guts" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" />
+                <Label htmlFor="stat-guts" style={{ color: 'rgba(255, 109, 174, 1)' }}>Guts</Label>
+                <Input id="stat-guts" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" style={{ color: 'rgba(255, 109, 174, 1)' }} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="stat-wisdom">Wisdom</Label>
-                <Input id="stat-wisdom" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" />
+                <Label htmlFor="stat-wisdom" style={{ color: 'rgba(60, 224, 170, 1)' }}>Wisdom</Label>
+                <Input id="stat-wisdom" type="number" min="0" max="1600" step="1" defaultValue="0" inputMode="numeric" style={{ color: 'rgba(60, 224, 170, 1)' }} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="star-level">Star Level</Label>

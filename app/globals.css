@@ -3076,6 +3076,21 @@ body.dark-mode .rating-summary .pill {
 }
 .rating-total-pill .value {
   font-size: 2rem;
+  transition: color 0.3s ease-in-out;
+}
+
+.rating-total-pill .value.rating-rainbow-text,
+.rating-float-meta .value.rating-rainbow-text {
+  transition: background 0.3s ease-in-out, background-size 0.3s ease-in-out;
+}
+
+@keyframes rating-rainbow-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 300% 50%;
+  }
 }
 .rating-total-pill .label,
 .rating-total-pill .value {
@@ -3187,6 +3202,7 @@ body.dark-mode .rating-badge {
   font-size: 1.05rem;
   font-weight: 800;
   color: #0f172a;
+  transition: color 0.3s ease-in-out, background 0.3s ease-in-out, background-size 0.3s ease-in-out;
 }
 body.dark-mode .rating-float {
   background: rgba(15,23,42,0.92);

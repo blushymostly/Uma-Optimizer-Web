@@ -9,10 +9,10 @@ import DarkModeToggle from './DarkModeToggle'
 import { cn } from '@/lib/utils'
 
 const ROUTES = [
+  { label: 'Optimizer', path: '/' },
   { label: 'Support Hints', path: '/hints' },
   { label: 'Umadle', path: '/umadle' },
   { label: 'Randomizer', path: '/random' },
-  { label: 'Optimizer', path: '/optimizer' },
 ]
 
 export default function Navigation() {
@@ -35,10 +35,10 @@ export default function Navigation() {
         <div className="nav-left">
           <Link 
             className="brand text-lg font-bold transition-colors hover:text-[#3A7BC8]" 
-            href="/hints" 
-            aria-label="Uma Tools Home"
+            href="/" 
+            aria-label="Umaptimizer Home"
           >
-            UmaTools
+            Umaptimizer
           </Link>
           <Button
             variant="ghost"
@@ -61,7 +61,7 @@ export default function Navigation() {
                 href={route.path}
                 className={cn(
                   'nav-link px-3 py-1.5 rounded-md text-sm font-medium transition-all',
-                  pathname === route.path 
+                  (pathname === route.path || (route.path === '/' && pathname === '/optimizer'))
                     ? 'active bg-[rgba(74,144,226,0.15)] border border-[rgba(74,144,226,0.4)] text-[#4A90E2] font-semibold' 
                     : 'text-[#475569] hover:bg-[rgba(74,144,226,0.1)] hover:border-[rgba(74,144,226,0.3)] hover:text-[#4A90E2]'
                 )}

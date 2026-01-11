@@ -6,36 +6,69 @@
   const qsa = (sel, el=document) => Array.from(el.querySelectorAll(sel));
 
   const els = {
-    fSSR: qs("#fSSR"), fSR: qs("#fSR"), fR: qs("#fR"),
-    rollBtn: qs("#rollBtn"),
-    excludeInput: qs("#excludeInput"),
-    addExBtn: qs("#addExBtn"),
-    excludeChips: qs("#excludeChips"),
-    clearExBtn: qs("#clearExBtn"),
-    deckResults: qs("#deckResults"),
-    supportList: qs("#supportList"),
-    pickUmaBtn: qs("#pickUmaBtn"),
-    umaResult: qs("#umaResult"),
-    speed2x: qs("#speed2x"),
-    speed2xUma: qs("#speed2xUma")
+    fSSR: null, fSR: null, fR: null,
+    rollBtn: null,
+    excludeInput: null,
+    addExBtn: null,
+    excludeChips: null,
+    clearExBtn: null,
+    deckResults: null,
+    supportList: null,
+    pickUmaBtn: null,
+    umaResult: null,
+    speed2x: null,
+    speed2xUma: null
+  };
+
+  // Helper function to find checkbox element (may be Radix UI button or standard input)
+  const findCheckbox = (id) => {
+    // Radix UI checkbox has id on the button element with data-slot="checkbox"
+    // Simple direct lookup by ID - Radix UI passes id prop to the button
+    return qs(`#${id}`);
   };
 
   // Helper to check if Radix UI checkbox is checked (shadcn checkbox)
   const isChecked = (el) => {
-    if (!el) return false;
-    // Check for standard input checkbox
-    if (el.type === 'checkbox' || el.tagName === 'INPUT') {
+    if (!el) return true; // Default to true if element not found (for defaultChecked)
+    
+    // Check for standard input checkbox first
+    if (el.tagName === 'INPUT' && el.type === 'checkbox') {
       return el.checked;
     }
+    
     // Check for Radix UI checkbox (shadcn) - uses data-state="checked"
-    // Radix UI checkbox has data-slot="checkbox" and data-state="checked" when checked
+    // Radix UI checkbox is a button element with data-slot="checkbox"
     const state = el.getAttribute('data-state');
     if (state === 'checked') return true;
-    // Also check aria-checked for accessibility
+    if (state === 'unchecked') return false;
+    
+    // Fallback: check aria-checked
     const ariaChecked = el.getAttribute('aria-checked');
     if (ariaChecked === 'true') return true;
-    return false;
+    if (ariaChecked === 'false') return false;
+    
+    // If element exists but state is unclear, default to true (for defaultChecked)
+    // This handles defaultChecked checkboxes that haven't rendered their state yet
+    return true;
   };
+
+  // Initialize elements after DOM is ready
+  function initElements() {
+    els.fSSR = findCheckbox('fSSR');
+    els.fSR = findCheckbox('fSR');
+    els.fR = findCheckbox('fR');
+    els.rollBtn = qs("#rollBtn");
+    els.excludeInput = qs("#excludeInput");
+    els.addExBtn = qs("#addExBtn");
+    els.excludeChips = qs("#excludeChips");
+    els.clearExBtn = qs("#clearExBtn");
+    els.deckResults = qs("#deckResults");
+    els.supportList = qs("#supportList");
+    els.pickUmaBtn = qs("#pickUmaBtn");
+    els.umaResult = qs("#umaResult");
+    els.speed2x = findCheckbox('speed2x');
+    els.speed2xUma = findCheckbox('speed2xUma');
+  }
 
   const store = {
     getExclusions() {
@@ -159,14 +192,45 @@ function getSpeedFactorUma(){ return (els.speed2xUma && isChecked(els.speed2xUma
 
   // ------- Static render (deck) -------
   function renderDeckStatic(){
+    if (!supports || supports.length === 0) {
+      els.deckResults.innerHTML = `<div class="inline-note">Loading data...</div>`;
+      return;
+    }
+    
     const ex = new Set(store.getExclusions());
+    
+    // Try to get checkbox states, default to true if not found or unclear
+    const fSSRChecked = els.fSSR ? isChecked(els.fSSR) : true;
+    const fSRChecked = els.fSR ? isChecked(els.fSR) : true;
+    const fRChecked = els.fR ? isChecked(els.fR) : true;
+    
     const allowedR = new Set([
-      isChecked(els.fSSR) ? "SSR" : null,
-      isChecked(els.fSR)  ? "SR"  : null,
-      isChecked(els.fR)   ? "R"   : null,
+      fSSRChecked ? "SSR" : null,
+      fSRChecked  ? "SR"  : null,
+      fRChecked   ? "R"   : null,
     ].filter(Boolean));
 
+    // Always ensure at least one rarity is selected (default to all)
+    if (allowedR.size === 0) {
+      allowedR.add("SSR");
+      allowedR.add("SR");
+      allowedR.add("R");
+    }
+
     const pool = supports.filter(s => allowedR.has(s.rarity) && !ex.has(s.slug));
+    
+    // Debug: log pool size
+    if (pool.length === 0) {
+      console.log('Randomizer: No cards in pool', {
+        totalSupports: supports.length,
+        allowedR: Array.from(allowedR),
+        exclusionsCount: ex.size,
+        fSSRChecked,
+        fSRChecked,
+        fRChecked
+      });
+    }
+    
     const pick = pickNRandom(pool, Math.min(5, pool.length));
 
     els.deckResults.innerHTML = pick.length ? pick.map(cardMarkup).join("") :
@@ -206,13 +270,31 @@ function getSpeedFactorUma(){ return (els.speed2xUma && isChecked(els.speed2xUma
 
   function startDeckRoll(){
     if (rolling) return;
+    
+    if (!supports || supports.length === 0) {
+      els.deckResults.innerHTML = `<div class="inline-note">Data not loaded yet. Please wait...</div>`;
+      return;
+    }
 
     const ex = new Set(store.getExclusions());
+    
+    // Try to get checkbox states, default to true if not found or unclear
+    const fSSRChecked = els.fSSR ? isChecked(els.fSSR) : true;
+    const fSRChecked = els.fSR ? isChecked(els.fSR) : true;
+    const fRChecked = els.fR ? isChecked(els.fR) : true;
+    
     const allowedR = new Set([
-      isChecked(els.fSSR) ? "SSR" : null,
-      isChecked(els.fSR)  ? "SR"  : null,
-      isChecked(els.fR)   ? "R"   : null,
+      fSSRChecked ? "SSR" : null,
+      fSRChecked  ? "SR"  : null,
+      fRChecked   ? "R"   : null,
     ].filter(Boolean));
+
+    // Always ensure at least one rarity is selected (default to all)
+    if (allowedR.size === 0) {
+      allowedR.add("SSR");
+      allowedR.add("SR");
+      allowedR.add("R");
+    }
 
     const pool = supports.filter(s => allowedR.has(s.rarity) && !ex.has(s.slug));
     const N = Math.min(5, pool.length);
@@ -444,8 +526,17 @@ const duration = Math.max(600, Math.round(durationBase * getSpeedFactorUma()));
 
   // Init - wait for DOM to be ready
   function init(){
-    // Check if all required elements exist
-    const missing = Object.entries(els).filter(([name, el]) => !el && name !== 'supportList').map(([name]) => name);
+    console.log('Randomizer: init() called');
+    // Initialize element references
+    initElements();
+    console.log('Randomizer: Elements initialized', { 
+      fSSR: !!els.fSSR, fSR: !!els.fSR, fR: !!els.fR,
+      rollBtn: !!els.rollBtn, deckResults: !!els.deckResults 
+    });
+    
+    // Check if all required elements exist (allow supportList to be missing)
+    const required = ['fSSR', 'fSR', 'fR', 'rollBtn', 'excludeInput', 'addExBtn', 'excludeChips', 'clearExBtn', 'deckResults', 'pickUmaBtn', 'umaResult'];
+    const missing = required.filter(name => !els[name]);
     if (missing.length > 0) {
       console.warn('Randomizer: Missing elements:', missing);
       // Retry after a short delay if elements aren't ready
@@ -453,33 +544,42 @@ const duration = Math.max(600, Math.round(durationBase * getSpeedFactorUma()));
         document.addEventListener('DOMContentLoaded', init);
         return;
       }
-      setTimeout(init, 100);
+      setTimeout(() => {
+        console.log('Randomizer: Retrying init after delay');
+        init();
+      }, 100);
       return;
     }
 
+    console.log('Randomizer: All elements found, loading data...');
     (async () => {
       try{
+        console.log('Randomizer: Fetching data...');
         const [hints, umas] = await Promise.all([
           fetchJSON(HINTS_URL, "/support_hints.json"),
           fetchJSON(UMA_URL, "/uma_data.json")
         ]);
+        console.log('Randomizer: Data fetched', { hintsLength: hints?.length, umasLength: umas?.length });
         supports = mapSupports(hints);
         umaList = mapUmas(umas);
+        console.log('Randomizer: Loaded data', { supportsCount: supports.length, umaCount: umaList.length });
         buildDatalist();
         renderExclusions();
         renderDeckStatic();  // initial deck render
         wireEvents();        // <-- attach all listeners
         // Uma area starts idle until user rolls
         els.umaResult.innerHTML = `<div class="inline-note">Click "Pick Random Uma" to roll.</div>`;
+        console.log('Randomizer: Initialization complete');
       }catch(e){
         console.error('Randomizer init error:', e);
-        if (els.deckResults) els.deckResults.innerHTML = `<div class="inline-note">Failed to load data.</div>`;
-        if (els.umaResult) els.umaResult.innerHTML = `<div class="inline-note">Failed to load data.</div>`;
+        if (els.deckResults) els.deckResults.innerHTML = `<div class="inline-note">Failed to load data: ${e.message}</div>`;
+        if (els.umaResult) els.umaResult.innerHTML = `<div class="inline-note">Failed to load data: ${e.message}</div>`;
       }
     })();
   }
 
   // Start initialization
+  console.log('Randomizer: Script loaded, starting init');
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {

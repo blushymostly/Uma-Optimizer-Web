@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 
 export const metadata: Metadata = {
-  title: 'UmaTools - Uma Musume Randomizer',
+  title: 'Umaptimizer - Uma Musume Randomizer',
   description: 'Randomize Uma Musume support decks and pick a random Uma for training challenges.',
 }
 

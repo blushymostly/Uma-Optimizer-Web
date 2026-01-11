@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
 export const metadata: Metadata = {
-  title: 'UmaTools - Uma Musume Umadle',
+  title: 'Umaptimizer - Uma Musume Umadle',
   description: 'Daily Uma Musume guessing game where you narrow down the mystery Uma with stat hints.',
 }
 
