@@ -35,7 +35,7 @@ export default function OptimizerPage() {
                   <div className="space-y-4 sm:space-y-5">
                     <div className="min-w-0">
                       <div className="text-sm font-medium mb-2">Track</div>
-                      <div className="flex flex-wrap gap-3 sm:grid sm:grid-cols-2">
+                      <div className="flex flex-wrap gap-3 sm:grid sm:grid-cols-2 sm:gap-2 max-w-2xl">
                         <div className="flex items-center gap-2 min-h-[44px] min-w-0">
                           <Label htmlFor="cfg-turf" className="text-sm font-medium whitespace-nowrap flex-shrink-0">Turf</Label>
                           <Select defaultValue="A">
@@ -67,7 +67,7 @@ export default function OptimizerPage() {
 
                     <div className="min-w-0">
                       <div className="text-sm font-medium mb-2">Distance</div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-2 max-w-2xl">
                         <div className="flex items-center gap-2 min-h-[44px] min-w-0">
                           <Label htmlFor="cfg-sprint" className="text-sm font-medium whitespace-nowrap flex-shrink-0">Sprint</Label>
                           <Select defaultValue="D">
@@ -125,7 +125,7 @@ export default function OptimizerPage() {
 
                     <div className="min-w-0">
                       <div className="text-sm font-medium mb-2">Strategy</div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-2 max-w-2xl">
                         <div className="flex items-center gap-2 min-h-[44px] min-w-0">
                           <Label htmlFor="cfg-front" className="text-sm font-medium whitespace-nowrap flex-shrink-0">Front</Label>
                           <Select defaultValue="A">
@@ -297,7 +297,7 @@ export default function OptimizerPage() {
               <div className="space-y-4 sm:space-y-5 min-w-0">
                 <div className="min-w-0">
                   <div className="text-sm font-medium mb-3 break-words">Track</div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-2 max-w-2xl">
                     <div className="flex items-center gap-2 min-w-0">
                       <Checkbox name="auto-target" id="auto-target-turf" value="turf" defaultChecked />
                       <Label htmlFor="auto-target-turf" className="cursor-pointer text-sm break-words">Turf</Label>
@@ -311,7 +311,7 @@ export default function OptimizerPage() {
 
                 <div className="min-w-0">
                   <div className="text-sm font-medium mb-3 break-words">Distance</div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-2 max-w-2xl">
                     <div className="flex items-center gap-2 min-w-0">
                       <Checkbox name="auto-target" id="auto-target-sprint" value="sprint" defaultChecked />
                       <Label htmlFor="auto-target-sprint" className="cursor-pointer text-sm break-words">Sprint</Label>
@@ -333,7 +333,7 @@ export default function OptimizerPage() {
 
                 <div className="min-w-0">
                   <div className="text-sm font-medium mb-3 break-words">Strategy</div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-2 max-w-2xl">
                     <div className="flex items-center gap-2 min-w-0">
                       <Checkbox name="auto-target" id="auto-target-front" value="front" defaultChecked />
                       <Label htmlFor="auto-target-front" className="cursor-pointer text-sm break-words">Front</Label>
