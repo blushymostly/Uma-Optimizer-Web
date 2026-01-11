@@ -3,21 +3,16 @@
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
+import { Menu, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import DarkModeToggle from './DarkModeToggle'
+import { cn } from '@/lib/utils'
 
 const ROUTES = [
+  { label: 'Optimizer', path: '/' },
   { label: 'Support Hints', path: '/hints' },
   { label: 'Umadle', path: '/umadle' },
   { label: 'Randomizer', path: '/random' },
-  { label: 'Optimizer', path: '/optimizer' },
-]
-
-const FOOTER_LINKS = [
-  {
-    label: 'GitHub',
-    href: 'https://github.com/blushymostly/Uma-Optimizer-Web',
-  },
-  { label: 'YouTube', href: 'https://youtube.com/@MaybeVoid' },
 ]
 
 export default function Navigation() {
@@ -35,64 +30,52 @@ export default function Navigation() {
   }, [isMenuOpen])
 
   return (
-    <>
-      <nav className={`site-nav ${isMenuOpen ? 'open' : ''}`}>
-        <div className="nav-inner">
-          <div className="nav-left">
-            <Link className="brand" href="/hints" aria-label="Uma Tools Home">
-              UmaTools
-            </Link>
-            <button
-              className="menu-btn"
-              aria-label="Menu"
-              aria-expanded={isMenuOpen}
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+    <nav className={cn('site-nav', isMenuOpen && 'open')}>
+      <div className="nav-inner">
+        <div className="nav-left">
+          <Link 
+            className="brand text-lg font-bold transition-colors hover:text-[#3A7BC8]" 
+            href="/" 
+            aria-label="Umaptimizer Home"
+          >
+            Umaptimizer
+          </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden menu-btn"
+            aria-label="Menu"
+            aria-expanded={isMenuOpen}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
+          </Button>
+          <div className="nav-links" role="navigation" aria-label="Primary">
+            {ROUTES.map((route) => (
+              <Link
+                key={route.path}
+                href={route.path}
+                className={cn(
+                  'nav-link px-3 py-1.5 rounded-md text-sm font-medium transition-all',
+                  (pathname === route.path || (route.path === '/' && pathname === '/optimizer'))
+                    ? 'active bg-[rgba(74,144,226,0.15)] border border-[rgba(74,144,226,0.4)] text-[#4A90E2] font-semibold' 
+                    : 'text-[#475569] hover:bg-[rgba(74,144,226,0.1)] hover:border-[rgba(74,144,226,0.3)] hover:text-[#4A90E2]'
+                )}
+                onClick={() => setIsMenuOpen(false)}
               >
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            <div className="nav-links" role="navigation" aria-label="Primary">
-              {ROUTES.map((route) => (
-                <Link
-                  key={route.path}
-                  href={route.path}
-                  className={`nav-link ${pathname === route.path ? 'active' : ''}`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {route.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div className="nav-right">
-            <DarkModeToggle />
+                {route.label}
+              </Link>
+            ))}
           </div>
         </div>
-      </nav>
-      <footer className="site-footer">
-        <span>Made with ❤️</span>
-        {FOOTER_LINKS.map((link) => (
-          <a
-            key={link.href}
-            href={link.href}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {link.label}
-          </a>
-        ))}
-      </footer>
-    </>
+        <div className="nav-right">
+          <DarkModeToggle />
+        </div>
+      </div>
+    </nav>
   )
 }

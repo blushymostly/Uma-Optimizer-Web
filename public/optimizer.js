@@ -427,6 +427,72 @@
     return RATING_BADGES.length - 1;
   }
 
+  function getRatingColor(badgeLabel) {
+    const colorMap = {
+      'G': '#9CA3AF',      // Gray
+      'G+': '#9CA3AF',     // Gray
+      'F': '#C084FC',      // Pastel Purple
+      'F+': '#C084FC',     // Pastel Purple
+      'E': '#F472B6',      // Pink
+      'E+': '#F472B6',     // Pink
+      'D': '#06B6D4',      // Cyan
+      'D+': '#06B6D4',     // Cyan
+      'C': '#10B981',      // Green
+      'C+': '#10B981',     // Green
+      'B': '#F43F5E',      // Bright Pink
+      'B+': '#F43F5E',     // Bright Pink
+      'A': '#F97316',      // Orange
+      'A+': '#F97316',     // Orange
+      'S': '#FBBF24',      // Gold
+      'S+': '#FBBF24',     // Gold
+      'SS': '#A855F7',     // Purple
+      'SS+': '#A855F7',    // Purple
+      'UG': 'rainbow',     // Rainbow gradient
+      'UG1': 'rainbow',    // Rainbow gradient
+      'UG2': 'rainbow',    // Rainbow gradient
+      'UG3': 'rainbow',    // Rainbow gradient
+      'UG4': 'rainbow',    // Rainbow gradient
+      'UG5': 'rainbow',    // Rainbow gradient
+      'UG6': 'rainbow',    // Rainbow gradient
+      'UG7': 'rainbow',    // Rainbow gradient
+      'UG8': 'rainbow',    // Rainbow gradient
+      'UG9': 'rainbow',    // Rainbow gradient
+      'UF': 'rainbow',     // Rainbow gradient
+      'UF1': 'rainbow',    // Rainbow gradient
+      'UF2': 'rainbow',    // Rainbow gradient
+      'UF3': 'rainbow',    // Rainbow gradient
+      'UF4': 'rainbow',    // Rainbow gradient
+      'UF5': 'rainbow',    // Rainbow gradient
+      'UF6': 'rainbow',    // Rainbow gradient
+      'UF7': 'rainbow',    // Rainbow gradient
+    };
+    return colorMap[badgeLabel] || '#F8FAFC'; // Default color
+  }
+
+  function applyRatingColor(element, badgeLabel) {
+    if (!element) return;
+    const color = getRatingColor(badgeLabel);
+    if (color === 'rainbow') {
+      // Apply rainbow gradient using background-clip: text
+      element.style.background = 'linear-gradient(90deg, #ff6a6a, #ffb56b, #ffd76a, #8fd3a8, #6ac0ff, #a78bfa, #ff6af0)';
+      element.style.backgroundSize = '300% 100%';
+      element.style.webkitBackgroundClip = 'text';
+      element.style.backgroundClip = 'text';
+      element.style.color = 'transparent';
+      element.style.animation = 'rating-rainbow-shimmer 6s linear infinite';
+      element.classList.add('rating-rainbow-text');
+    } else {
+      // Apply solid color
+      element.style.background = '';
+      element.style.backgroundSize = '';
+      element.style.webkitBackgroundClip = '';
+      element.style.backgroundClip = '';
+      element.style.color = color;
+      element.style.animation = '';
+      element.classList.remove('rating-rainbow-text');
+    }
+  }
+
   function applyBadgeSpriteStyles(target, spriteUrl, sheetWidth, sheetHeight) {
     if (!target) return;
     const badgeWidth = target.clientWidth || RATING_SPRITE.tileWidth;
@@ -527,6 +593,8 @@
     if (ratingDisplays.total) ratingDisplays.total.textContent = breakdown.total.toString();
     if (ratingDisplays.floatTotal) ratingDisplays.floatTotal.textContent = breakdown.total.toString();
     const badge = getRatingBadge(breakdown.total);
+    applyRatingColor(ratingDisplays.total, badge.label);
+    applyRatingColor(ratingDisplays.floatTotal, badge.label);
     updateBadgeSprite(ratingDisplays.badgeSprite, badge);
     updateBadgeSprite(ratingDisplays.floatBadgeSprite, badge);
     if (ratingDisplays.progressFill && ratingDisplays.nextLabel && ratingDisplays.nextNeeded) {
