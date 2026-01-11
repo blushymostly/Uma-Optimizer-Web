@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import DarkModeToggle from './DarkModeToggle'
@@ -34,10 +35,18 @@ export default function Navigation() {
       <div className="nav-inner">
         <div className="nav-left">
           <Link 
-            className="brand text-lg font-bold transition-colors hover:text-[#3A7BC8]" 
+            className="brand text-lg font-bold transition-colors hover:text-[#3A7BC8] flex items-center gap-2" 
             href="/" 
             aria-label="Umaptimizer Home"
           >
+            <Image
+              src="/logo.png"
+              alt="Umaptimizer Logo"
+              width={40}
+              height={40}
+              className="flex-shrink-0"
+              priority
+            />
             Umaptimizer
           </Link>
           <Button
