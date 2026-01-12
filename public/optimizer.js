@@ -18,7 +18,8 @@
   const remainingPointsEl = document.getElementById('remaining-points');
   const selectedListEl = document.getElementById('selected-list');
   const autoBuildBtn = document.getElementById('auto-build-btn');
-  const autoTargetInputs = document.querySelectorAll('input[name="auto-target"]');
+  // For React/Radix UI checkboxes, we'll find them dynamically by ID pattern
+  let autoTargetInputs = null;
   const autoBuilderStatus = document.getElementById('auto-builder-status');
   const copyBuildBtn = document.getElementById('copy-build');
   const loadBuildBtn = document.getElementById('load-build');
@@ -663,21 +664,75 @@
   }
 
   function getSelectedAutoTargets() {
-    if (!autoTargetInputs || !autoTargetInputs.length) return [];
-    return Array.from(autoTargetInputs)
-      .filter(input => input.checked)
-      .map(input => normalize(input.value))
-      .filter(Boolean);
+    // Find all auto-target checkboxes (support both regular inputs and Radix UI)
+    const targets = [];
+    const possibleIds = ['auto-target-turf', 'auto-target-dirt', 'auto-target-sprint', 
+                         'auto-target-mile', 'auto-target-medium', 'auto-target-long',
+                         'auto-target-front', 'auto-target-pace', 'auto-target-late', 
+                         'auto-target-end', 'auto-target-general'];
+    
+    possibleIds.forEach(id => {
+      const element = document.getElementById(id);
+      if (!element) return;
+      
+      let isChecked = false;
+      // Check if it's a regular input checkbox
+      if (element.tagName === 'INPUT' && element.type === 'checkbox') {
+        isChecked = element.checked;
+      } 
+      // Check if it's a Radix UI checkbox (button with data-state)
+      else if (element.getAttribute('data-state') === 'checked' || 
+               element.getAttribute('aria-checked') === 'true') {
+        isChecked = true;
+      }
+      // Also check for hidden input that Radix UI might create
+      else {
+        const hiddenInput = element.querySelector('input[type="hidden"]');
+        if (hiddenInput && hiddenInput.value === 'true') {
+          isChecked = true;
+        }
+      }
+      
+      if (isChecked) {
+        // Get value from ID (Radix UI doesn't store value in DOM, so extract from ID)
+        const value = id.replace('auto-target-', '');
+        if (value) {
+          targets.push(normalize(value));
+        }
+      }
+    });
+    
+    return targets.filter(Boolean);
   }
 
   function setAutoTargetSelections(list) {
-    if (!autoTargetInputs || !autoTargetInputs.length) return;
+    // Find all auto-target checkboxes (support both regular inputs and Radix UI)
+    const possibleIds = ['auto-target-turf', 'auto-target-dirt', 'auto-target-sprint', 
+                         'auto-target-mile', 'auto-target-medium', 'auto-target-long',
+                         'auto-target-front', 'auto-target-pace', 'auto-target-late', 
+                         'auto-target-end', 'auto-target-general'];
     const normalized = Array.isArray(list) ? new Set(list.map(v => normalize(v))) : null;
-    autoTargetInputs.forEach(input => {
-      if (!normalized || !normalized.size) {
-        input.checked = true;
-      } else {
-        input.checked = normalized.has(normalize(input.value));
+    
+    possibleIds.forEach(id => {
+      const element = document.getElementById(id);
+      if (!element) return;
+      
+      const value = id.replace('auto-target-', '');
+      const shouldBeChecked = !normalized || !normalized.size || normalized.has(normalize(value));
+      
+      // Handle regular input checkbox
+      if (element.tagName === 'INPUT' && element.type === 'checkbox') {
+        element.checked = shouldBeChecked;
+      }
+      // Handle Radix UI checkbox - click to toggle if needed
+      else {
+        const currentState = element.getAttribute('data-state');
+        const isCurrentlyChecked = currentState === 'checked' || element.getAttribute('aria-checked') === 'true';
+        
+        if (shouldBeChecked !== isCurrentlyChecked) {
+          // Click to toggle the checkbox
+          element.click();
+        }
       }
     });
   }
@@ -2607,7 +2662,44 @@
       }
     });
   }
-  if (autoBuildBtn) autoBuildBtn.addEventListener('click', autoBuildIdealSkills);
+  // Wait for button to be available (for Next.js/React hydration)
+  let autoBuildListenerAttached = false;
+  function attachAutoBuildListener() {
+    if (autoBuildListenerAttached) return true;
+    const btn = document.getElementById('auto-build-btn');
+    if (btn) {
+      btn.addEventListener('click', autoBuildIdealSkills);
+      autoBuildListenerAttached = true;
+      return true;
+    }
+    return false;
+  }
+  
+  // Try to attach immediately, or wait for DOM
+  if (!attachAutoBuildListener()) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!attachAutoBuildListener()) {
+          // Fallback: poll for button (for React hydration)
+          const pollInterval = setInterval(() => {
+            if (attachAutoBuildListener()) {
+              clearInterval(pollInterval);
+            }
+          }, 100);
+          // Stop polling after 5 seconds
+          setTimeout(() => clearInterval(pollInterval), 5000);
+        }
+      });
+    } else {
+      // DOM already loaded, but button might not be rendered yet (React)
+      const pollInterval = setInterval(() => {
+        if (attachAutoBuildListener()) {
+          clearInterval(pollInterval);
+        }
+      }, 100);
+      setTimeout(() => clearInterval(pollInterval), 5000);
+    }
+  }
   if (fastLearnerToggle) {
     fastLearnerToggle.addEventListener('change', () => {
       updateHintOptionLabels();
