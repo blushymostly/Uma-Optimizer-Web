@@ -56,17 +56,22 @@
 
   // Race config selects (mirroring main page)
   // These are hidden select elements synced with React Select components
+  // We'll get them dynamically to handle React hydration
+  function getCfgElement(key) {
+    return document.getElementById(`cfg-${key}`);
+  }
+  
   const cfg = {
-    turf: document.getElementById('cfg-turf'),
-    dirt: document.getElementById('cfg-dirt'),
-    sprint: document.getElementById('cfg-sprint'),
-    mile: document.getElementById('cfg-mile'),
-    medium: document.getElementById('cfg-medium'),
-    long: document.getElementById('cfg-long'),
-    front: document.getElementById('cfg-front'),
-    pace: document.getElementById('cfg-pace'),
-    late: document.getElementById('cfg-late'),
-    end: document.getElementById('cfg-end'),
+    get turf() { return getCfgElement('turf'); },
+    get dirt() { return getCfgElement('dirt'); },
+    get sprint() { return getCfgElement('sprint'); },
+    get mile() { return getCfgElement('mile'); },
+    get medium() { return getCfgElement('medium'); },
+    get long() { return getCfgElement('long'); },
+    get front() { return getCfgElement('front'); },
+    get pace() { return getCfgElement('pace'); },
+    get late() { return getCfgElement('late'); },
+    get end() { return getCfgElement('end'); },
   };
 
   let skillsByCategory = {};    // category -> [{ name, score, checkType }]
@@ -236,7 +241,9 @@
 
   function updateAffinityStyles() {
     const grades = ['good','average','bad','terrible'];
-    Object.values(cfg).forEach(sel => {
+    const cfgKeys = ['turf', 'dirt', 'sprint', 'mile', 'medium', 'long', 'front', 'pace', 'late', 'end'];
+    cfgKeys.forEach(key => {
+      const sel = cfg[key];
       if (!sel) return;
       const bucket = getBucketForGrade(sel.value);
       grades.forEach(g => sel.classList.remove(`aff-grade-${g}`));
@@ -247,19 +254,21 @@
   function getBucketForSkill(checkType) {
     const ct = normalize(checkType);
     const map = {
-      'turf': cfg.turf,
-      'dirt': cfg.dirt,
-      'sprint': cfg.sprint,
-      'mile': cfg.mile,
-      'medium': cfg.medium,
-      'long': cfg.long,
-      'front': cfg.front,
-      'pace': cfg.pace,
-      'late': cfg.late,
-      'end': cfg.end,
+      'turf': 'turf',
+      'dirt': 'dirt',
+      'sprint': 'sprint',
+      'mile': 'mile',
+      'medium': 'medium',
+      'long': 'long',
+      'front': 'front',
+      'pace': 'pace',
+      'late': 'late',
+      'end': 'end',
     };
-    const sel = map[ct];
-    if (!sel) return 'base';
+    const key = map[ct];
+    if (!key) return 'base';
+    const sel = cfg[key];
+    if (!sel || !sel.value) return 'base';
     return getBucketForGrade(sel.value);
   }
 
@@ -645,7 +654,7 @@
   }
 
   function handleRatingInputChange() {
-    updateRatingDisplay();
+    updateRatingWithCurrentSkills();
     saveState();
   }
 
@@ -1339,7 +1348,23 @@
     };
     renderResults(mergedResult, budget);
   }
-  const autoOptimizeDebounced = debounce(tryAutoOptimize, 120);
+  // Calculate total skill score from all entered skills
+  function calculateTotalSkillScore() {
+    const { items } = collectItems();
+    return items.reduce((sum, item) => sum + (item.score || 0), 0);
+  }
+
+  // Update rating display with current skill score
+  function updateRatingWithCurrentSkills() {
+    const totalScore = calculateTotalSkillScore();
+    lastSkillScore = totalScore;
+    updateRatingDisplay();
+  }
+
+  const autoOptimizeDebounced = debounce(() => {
+    tryAutoOptimize();
+    updateRatingWithCurrentSkills();
+  }, 120);
 
   function rebuildSkillCaches() {
     const nextIndex = new Map();
@@ -2425,7 +2450,11 @@
   // persistence
   function saveState() {
     const state = { budget: parseInt(budgetInput.value, 10) || 0, cfg: {}, rows: [], autoTargets: [], rating: readRatingState(), fastLearner: !!fastLearnerToggle?.checked };
-    Object.entries(cfg).forEach(([k, el]) => { state.cfg[k] = el ? el.value : 'A'; });
+    const cfgKeys = ['turf', 'dirt', 'sprint', 'mile', 'medium', 'long', 'front', 'pace', 'late', 'end'];
+    cfgKeys.forEach(k => {
+      const el = cfg[k];
+      state.cfg[k] = el && el.value ? el.value : 'A';
+    });
     if (autoTargetInputs && autoTargetInputs.length) {
       state.autoTargets = Array.from(autoTargetInputs)
         .filter(input => input.checked)
@@ -2459,18 +2488,11 @@
       const state = JSON.parse(raw); if (!state || !Array.isArray(state.rows)) return false;
       budgetInput.value = state.budget || 0;
       if (fastLearnerToggle) fastLearnerToggle.checked = !!state.fastLearner;
-      // Load race config values (React Select components)
       Object.entries(state.cfg || {}).forEach(([k, v]) => {
-        const id = `cfg-${k}`;
-        const element = document.getElementById(id);
-        if (element) {
-          // For React Select, we need to trigger a change programmatically
-          // This is handled by React, so we'll just store the value
-          // The actual setting will happen when React hydrates
-          if (element.tagName === 'SELECT') {
-            element.value = v;
-            element.dispatchEvent(new Event('change', { bubbles: true }));
-          }
+        const el = cfg[k];
+        if (el) {
+          el.value = v;
+          el.dispatchEvent(new Event('change', { bubbles: true }));
         }
       });
       if (Array.isArray(state.autoTargets) && state.autoTargets.length) {
@@ -2757,7 +2779,37 @@
     updateHintOptionLabels();
     refreshAllRowCosts();
     ensureOneEmptyRow();
+    
+    // Add event listeners to cfg select elements to recalculate skill scores
+    const cfgKeys = ['turf', 'dirt', 'sprint', 'mile', 'medium', 'long', 'front', 'pace', 'late', 'end'];
+    cfgKeys.forEach(key => {
+      const el = cfg[key];
+      if (el) {
+        el.addEventListener('change', () => {
+          updateAffinityStyles();
+          updateRatingWithCurrentSkills();
+          autoOptimizeDebounced();
+          saveState();
+        });
+      }
+    });
+    
+    // Add event listeners to star level and unique level
+    if (ratingInputs.star) {
+      ratingInputs.star.addEventListener('change', () => {
+        updateRatingWithCurrentSkills();
+        saveState();
+      });
+    }
+    if (ratingInputs.unique) {
+      ratingInputs.unique.addEventListener('change', () => {
+        updateRatingWithCurrentSkills();
+        saveState();
+      });
+    }
+    
     autoOptimizeDebounced();
+    updateRatingWithCurrentSkills();
   }
 
   // Init: prefer CSV by default
