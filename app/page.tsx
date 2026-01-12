@@ -1,5 +1,7 @@
-import type { Metadata } from 'next'
+'use client'
+
 import Script from 'next/script'
+import { useRef, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardAction } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -8,14 +10,67 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 
-export const metadata: Metadata = {
-  title: 'Umaptimizer - Uma Musume Skill Optimizer & Rating Calculator',
-  description: 'Uma Musume skill optimizer and rating calculator to plan builds, manage skill points, and project final ratings.',
-}
-
 const GRADE_OPTIONS = ['S', 'A', 'B', 'C', 'D', 'E', 'F', 'G']
 
 export default function OptimizerPage() {
+  // Refs for hidden select elements (for optimizer.js compatibility)
+  const cfgRefs = {
+    turf: useRef<HTMLSelectElement>(null),
+    dirt: useRef<HTMLSelectElement>(null),
+    sprint: useRef<HTMLSelectElement>(null),
+    mile: useRef<HTMLSelectElement>(null),
+    medium: useRef<HTMLSelectElement>(null),
+    long: useRef<HTMLSelectElement>(null),
+    front: useRef<HTMLSelectElement>(null),
+    pace: useRef<HTMLSelectElement>(null),
+    late: useRef<HTMLSelectElement>(null),
+    end: useRef<HTMLSelectElement>(null),
+  }
+  const starLevelRef = useRef<HTMLSelectElement>(null)
+  const uniqueLevelRef = useRef<HTMLSelectElement>(null)
+
+  const syncSelectValue = (key: string, value: string) => {
+    const ref = cfgRefs[key as keyof typeof cfgRefs]
+    if (ref?.current) {
+      ref.current.value = value
+      ref.current.dispatchEvent(new Event('change', { bubbles: true }))
+    }
+  }
+
+  const syncStarLevel = (value: string) => {
+    if (starLevelRef.current) {
+      starLevelRef.current.value = value
+      starLevelRef.current.dispatchEvent(new Event('change', { bubbles: true }))
+    }
+  }
+
+  const syncUniqueLevel = (value: string) => {
+    if (uniqueLevelRef.current) {
+      uniqueLevelRef.current.value = value
+      uniqueLevelRef.current.dispatchEvent(new Event('change', { bubbles: true }))
+    }
+  }
+
+  // Initialize hidden selects on mount and sync with optimizer.js
+  useEffect(() => {
+    // Wait for optimizer.js to initialize, then trigger change events
+    const initTimer = setTimeout(() => {
+      Object.values(cfgRefs).forEach(ref => {
+        if (ref.current) {
+          ref.current.dispatchEvent(new Event('change', { bubbles: true }))
+        }
+      })
+      if (starLevelRef.current) {
+        starLevelRef.current.dispatchEvent(new Event('change', { bubbles: true }))
+      }
+      if (uniqueLevelRef.current) {
+        uniqueLevelRef.current.dispatchEvent(new Event('change', { bubbles: true }))
+      }
+    }, 500)
+
+    return () => clearTimeout(initTimer)
+  }, [])
+
   return (
     <>
       <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-6 sm:space-y-8 overflow-x-hidden">
@@ -38,8 +93,8 @@ export default function OptimizerPage() {
                       <div className="flex flex-wrap gap-3 sm:grid sm:grid-cols-2 sm:gap-2 max-w-2xl">
                         <div className="flex items-center gap-2 min-h-[44px] min-w-0">
                           <Label htmlFor="cfg-turf" className="text-sm font-medium whitespace-nowrap flex-shrink-0">Turf</Label>
-                          <Select defaultValue="A">
-                            <SelectTrigger id="cfg-turf" className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
+                          <Select defaultValue="A" onValueChange={(value) => syncSelectValue('turf', value)}>
+                            <SelectTrigger className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -48,11 +103,16 @@ export default function OptimizerPage() {
                               ))}
                             </SelectContent>
                           </Select>
+                          <select ref={cfgRefs.turf} id="cfg-turf" style={{ display: 'none' }} defaultValue="A">
+                            {GRADE_OPTIONS.map(grade => (
+                              <option key={grade} value={grade}>{grade}</option>
+                            ))}
+                          </select>
                         </div>
                         <div className="flex items-center gap-2 min-h-[44px] min-w-0">
                           <Label htmlFor="cfg-dirt" className="text-sm font-medium whitespace-nowrap flex-shrink-0">Dirt</Label>
-                          <Select defaultValue="G">
-                            <SelectTrigger id="cfg-dirt" className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
+                          <Select defaultValue="G" onValueChange={(value) => syncSelectValue('dirt', value)}>
+                            <SelectTrigger className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -61,6 +121,11 @@ export default function OptimizerPage() {
                               ))}
                             </SelectContent>
                           </Select>
+                          <select ref={cfgRefs.dirt} id="cfg-dirt" style={{ display: 'none' }} defaultValue="G">
+                            {GRADE_OPTIONS.map(grade => (
+                              <option key={grade} value={grade}>{grade}</option>
+                            ))}
+                          </select>
                         </div>
                       </div>
                     </div>
@@ -70,8 +135,8 @@ export default function OptimizerPage() {
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-2 max-w-2xl">
                         <div className="flex items-center gap-2 min-h-[44px] min-w-0">
                           <Label htmlFor="cfg-sprint" className="text-sm font-medium whitespace-nowrap flex-shrink-0">Sprint</Label>
-                          <Select defaultValue="D">
-                            <SelectTrigger id="cfg-sprint" className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
+                          <Select defaultValue="D" onValueChange={(value) => syncSelectValue('sprint', value)}>
+                            <SelectTrigger className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -80,11 +145,16 @@ export default function OptimizerPage() {
                               ))}
                             </SelectContent>
                           </Select>
+                          <select ref={cfgRefs.sprint} id="cfg-sprint" style={{ display: 'none' }} defaultValue="D">
+                            {GRADE_OPTIONS.map(grade => (
+                              <option key={grade} value={grade}>{grade}</option>
+                            ))}
+                          </select>
                         </div>
                         <div className="flex items-center gap-2 min-h-[44px] min-w-0">
                           <Label htmlFor="cfg-mile" className="text-sm font-medium whitespace-nowrap flex-shrink-0">Mile</Label>
-                          <Select defaultValue="C">
-                            <SelectTrigger id="cfg-mile" className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
+                          <Select defaultValue="C" onValueChange={(value) => syncSelectValue('mile', value)}>
+                            <SelectTrigger className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -93,11 +163,16 @@ export default function OptimizerPage() {
                               ))}
                             </SelectContent>
                           </Select>
+                          <select ref={cfgRefs.mile} id="cfg-mile" style={{ display: 'none' }} defaultValue="C">
+                            {GRADE_OPTIONS.map(grade => (
+                              <option key={grade} value={grade}>{grade}</option>
+                            ))}
+                          </select>
                         </div>
                         <div className="flex items-center gap-2 min-h-[44px] min-w-0">
                           <Label htmlFor="cfg-medium" className="text-sm font-medium whitespace-nowrap flex-shrink-0">Medium</Label>
-                          <Select defaultValue="A">
-                            <SelectTrigger id="cfg-medium" className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
+                          <Select defaultValue="A" onValueChange={(value) => syncSelectValue('medium', value)}>
+                            <SelectTrigger className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -106,11 +181,16 @@ export default function OptimizerPage() {
                               ))}
                             </SelectContent>
                           </Select>
+                          <select ref={cfgRefs.medium} id="cfg-medium" style={{ display: 'none' }} defaultValue="A">
+                            {GRADE_OPTIONS.map(grade => (
+                              <option key={grade} value={grade}>{grade}</option>
+                            ))}
+                          </select>
                         </div>
                         <div className="flex items-center gap-2 min-h-[44px] min-w-0">
                           <Label htmlFor="cfg-long" className="text-sm font-medium whitespace-nowrap flex-shrink-0">Long</Label>
-                          <Select defaultValue="B">
-                            <SelectTrigger id="cfg-long" className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
+                          <Select defaultValue="B" onValueChange={(value) => syncSelectValue('long', value)}>
+                            <SelectTrigger className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -119,6 +199,11 @@ export default function OptimizerPage() {
                               ))}
                             </SelectContent>
                           </Select>
+                          <select ref={cfgRefs.long} id="cfg-long" style={{ display: 'none' }} defaultValue="B">
+                            {GRADE_OPTIONS.map(grade => (
+                              <option key={grade} value={grade}>{grade}</option>
+                            ))}
+                          </select>
                         </div>
                       </div>
                     </div>
@@ -128,8 +213,8 @@ export default function OptimizerPage() {
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-2 max-w-2xl">
                         <div className="flex items-center gap-2 min-h-[44px] min-w-0">
                           <Label htmlFor="cfg-front" className="text-sm font-medium whitespace-nowrap flex-shrink-0">Front</Label>
-                          <Select defaultValue="A">
-                            <SelectTrigger id="cfg-front" className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
+                          <Select defaultValue="A" onValueChange={(value) => syncSelectValue('front', value)}>
+                            <SelectTrigger className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -138,11 +223,16 @@ export default function OptimizerPage() {
                               ))}
                             </SelectContent>
                           </Select>
+                          <select ref={cfgRefs.front} id="cfg-front" style={{ display: 'none' }} defaultValue="A">
+                            {GRADE_OPTIONS.map(grade => (
+                              <option key={grade} value={grade}>{grade}</option>
+                            ))}
+                          </select>
                         </div>
                         <div className="flex items-center gap-2 min-h-[44px] min-w-0">
                           <Label htmlFor="cfg-pace" className="text-sm font-medium whitespace-nowrap flex-shrink-0">Pace</Label>
-                          <Select defaultValue="B">
-                            <SelectTrigger id="cfg-pace" className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
+                          <Select defaultValue="B" onValueChange={(value) => syncSelectValue('pace', value)}>
+                            <SelectTrigger className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -151,11 +241,16 @@ export default function OptimizerPage() {
                               ))}
                             </SelectContent>
                           </Select>
+                          <select ref={cfgRefs.pace} id="cfg-pace" style={{ display: 'none' }} defaultValue="B">
+                            {GRADE_OPTIONS.map(grade => (
+                              <option key={grade} value={grade}>{grade}</option>
+                            ))}
+                          </select>
                         </div>
                         <div className="flex items-center gap-2 min-h-[44px] min-w-0">
                           <Label htmlFor="cfg-late" className="text-sm font-medium whitespace-nowrap flex-shrink-0">Late</Label>
-                          <Select defaultValue="C">
-                            <SelectTrigger id="cfg-late" className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
+                          <Select defaultValue="C" onValueChange={(value) => syncSelectValue('late', value)}>
+                            <SelectTrigger className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -164,11 +259,16 @@ export default function OptimizerPage() {
                               ))}
                             </SelectContent>
                           </Select>
+                          <select ref={cfgRefs.late} id="cfg-late" style={{ display: 'none' }} defaultValue="C">
+                            {GRADE_OPTIONS.map(grade => (
+                              <option key={grade} value={grade}>{grade}</option>
+                            ))}
+                          </select>
                         </div>
                         <div className="flex items-center gap-2 min-h-[44px] min-w-0">
                           <Label htmlFor="cfg-end" className="text-sm font-medium whitespace-nowrap flex-shrink-0">End</Label>
-                          <Select defaultValue="B">
-                            <SelectTrigger id="cfg-end" className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
+                          <Select defaultValue="B" onValueChange={(value) => syncSelectValue('end', value)}>
+                            <SelectTrigger className="h-10 w-16 sm:w-14 min-w-16 sm:min-w-14 flex-shrink-0">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -177,6 +277,11 @@ export default function OptimizerPage() {
                               ))}
                             </SelectContent>
                           </Select>
+                          <select ref={cfgRefs.end} id="cfg-end" style={{ display: 'none' }} defaultValue="B">
+                            {GRADE_OPTIONS.map(grade => (
+                              <option key={grade} value={grade}>{grade}</option>
+                            ))}
+                          </select>
                         </div>
                       </div>
                     </div>
@@ -240,8 +345,8 @@ export default function OptimizerPage() {
               </div>
               <div className="space-y-2 min-w-0">
                 <Label htmlFor="star-level" className="break-words">Star Level</Label>
-                <Select defaultValue="3">
-                  <SelectTrigger id="star-level" className="h-10 w-full">
+                <Select defaultValue="3" onValueChange={syncStarLevel}>
+                  <SelectTrigger className="h-10 w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -250,11 +355,16 @@ export default function OptimizerPage() {
                     ))}
                   </SelectContent>
                 </Select>
+                <select ref={starLevelRef} id="star-level" style={{ display: 'none' }} defaultValue="3">
+                  {[1, 2, 3, 4, 5].map(level => (
+                    <option key={level} value={String(level)}>{level}</option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-2 min-w-0">
                 <Label htmlFor="unique-level" className="break-words">Unique Skill Level</Label>
-                <Select defaultValue="3">
-                  <SelectTrigger id="unique-level" className="h-10 w-full">
+                <Select defaultValue="3" onValueChange={syncUniqueLevel}>
+                  <SelectTrigger className="h-10 w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -263,6 +373,11 @@ export default function OptimizerPage() {
                     ))}
                   </SelectContent>
                 </Select>
+                <select ref={uniqueLevelRef} id="unique-level" style={{ display: 'none' }} defaultValue="3">
+                  {[1, 2, 3, 4, 5, 6].map(level => (
+                    <option key={level} value={String(level)}>{level}</option>
+                  ))}
+                </select>
               </div>
             </div>
             

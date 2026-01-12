@@ -55,6 +55,7 @@
   let lastSkillScore = 0;
 
   // Race config selects (mirroring main page)
+  // These are hidden select elements synced with React Select components
   const cfg = {
     turf: document.getElementById('cfg-turf'),
     dirt: document.getElementById('cfg-dirt'),
@@ -2458,7 +2459,20 @@
       const state = JSON.parse(raw); if (!state || !Array.isArray(state.rows)) return false;
       budgetInput.value = state.budget || 0;
       if (fastLearnerToggle) fastLearnerToggle.checked = !!state.fastLearner;
-      Object.entries(state.cfg || {}).forEach(([k, v]) => { if (cfg[k]) cfg[k].value = v; });
+      // Load race config values (React Select components)
+      Object.entries(state.cfg || {}).forEach(([k, v]) => {
+        const id = `cfg-${k}`;
+        const element = document.getElementById(id);
+        if (element) {
+          // For React Select, we need to trigger a change programmatically
+          // This is handled by React, so we'll just store the value
+          // The actual setting will happen when React hydrates
+          if (element.tagName === 'SELECT') {
+            element.value = v;
+            element.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        }
+      });
       if (Array.isArray(state.autoTargets) && state.autoTargets.length) {
         setAutoTargetSelections(state.autoTargets);
       } else {

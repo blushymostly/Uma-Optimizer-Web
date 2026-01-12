@@ -55,6 +55,7 @@
   let lastSkillScore = 0;
 
   // Race config selects (mirroring main page)
+  // These are hidden select elements synced with React Select components
   const cfg = {
     turf: document.getElementById('cfg-turf'),
     dirt: document.getElementById('cfg-dirt'),
